@@ -1,5 +1,5 @@
 {
-  "name": "Cathedral — Medieval Strategy Trainer",
+  "name": "Cathedral \u2014 Medieval Strategy Trainer",
   "short_name": "Cathedral",
   "description": "Cathedral medieval strategy board game",
   "start_url": "./",
@@ -9,13 +9,13 @@
   "theme_color": "#102b2e",
   "icons": [
     {
-      "src": "icons/cathedral-v52-192.png",
+      "src": "icons/cathedral-v52-192.png?v=53",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/cathedral-v52-512.png",
+      "src": "icons/cathedral-v52-512.png?v=53",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
