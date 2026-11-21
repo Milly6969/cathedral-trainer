@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102b2e">
+<meta name="color-scheme" content="light">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>Cathedral Trainer v43 · Bottom Corner Cleanup 2</title>
 <style>
 :root{
@@ -952,6 +957,9 @@ try{ const data=JSON.parse(localStorage.getItem(STORAGE_KEY)); if(data && data.b
     },{passive:true});
   }
 })();
+</script>
+<script>
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(console.warn)); }
 </script>
 </body>
 </html>
