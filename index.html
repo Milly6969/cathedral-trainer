@@ -818,7 +818,7 @@ function renderPieces(){ const side=currentViewerSide(); const box=$('pieces'); 
  // Descending footprint size: the two 1x1 Taverns occupy the compact last row.
  const galleryOrder={Academy:0,Castle:1,Tower:2,Infirmary:3,Manor:4,Square:5,Abbey:6,Bridge:7,Inn:8,Stable:9,Tavern:10};
  pcs.sort((a,b)=>(galleryOrder[a.base]??20)-(galleryOrder[b.base]??20));
- pcs.forEach(pc=>{ const btn=document.createElement('button'); btn.title=pc.label+(pc.placed?' · already placed':''); btn.className='piece'+(pc.base==='Tavern'?' tavern-thumb':'')+((g.selected[side]===pc.id && side===g.turn)?' selected':'')+(!activeSelectable?' viewonly':''); btn.disabled=(activeSelectable?pc.placed:false);
+ pcs.forEach(pc=>{ const btn=document.createElement('button'); btn.title=pc.label+(pc.placed?' · already placed':''); btn.className='piece'+(pc.base==='Tavern'?' tavern-thumb':'')+((g.selected[side]===pc.id && side===g.turn)?' selected':'')+(!activeSelectable?' viewonly':''); btn.disabled=pc.placed;
    const sprite=getPhoto(side, pc.base, 0); let visual; if(sprite){ const wrap=document.createElement('div'); wrap.className='pieceThumbWrap'; const img=document.createElement('img'); img.className='pieceThumb'; img.alt=pc.label; img.src=sprite; wrap.append(img); visual=wrap; } else { const mini=document.createElement('div'); mini.className='shape'; const filled=new Set(normalize(pc.cells).map(([x,y])=>y*5+x)); for(let i=0;i<25;i++){ const sq=document.createElement('i'); if(filled.has(i)) sq.className=`filled ${side===1?'light':'dark'}`; mini.append(sq); } visual=mini; }
    const text=document.createElement('div'); text.className='pieceName'; text.textContent=pc.label;
    btn.append(visual,text);
@@ -982,7 +982,7 @@ try{ const data=JSON.parse(localStorage.getItem(STORAGE_KEY)); if(data && data.m
 })();
 </script>
 <script>
-if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=54", {updateViaCache:"none"}).catch(console.warn)); }
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=55", {updateViaCache:"none"}).catch(console.warn)); }
 </script>
 <script type="module" src="./online.js?v=54"></script>
 </body>
