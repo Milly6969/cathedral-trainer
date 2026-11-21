@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cathedral Trainer v43 · Bottom Corner Cleanup 2</title>
+<style>
+:root{
+  --bg:#0f171a;--panel:#1b3034ee;--panelLine:#55727666;--text:#f6f0e5;--muted:#bdd0ce;
+  --board:#9b7a55;--board2:#b99870;--grid:#73563a;
+  --lightWood1:#faf0c7;--lightWood2:#ead59a;--lightWood3:#ceb47a;
+  --darkWood1:#9f6e35;--darkWood2:#8a5c2d;--darkWood3:#6d431f;
+  --neutral1:#d0d0d3;--neutral2:#b7b9bc;--neutral3:#9a9ea2;
+  --claimLight:#f4efb5;--claimDark:#8c6651;
+  --hint:#72b297;--invalid:#c97670;--gold:#efd98a;
+  --lightTex:url('assets/art_001.png');
+  --darkTex:url('assets/art_002.png');
+}
+*{box-sizing:border-box}
+body{min-height:100vh;background:linear-gradient(180deg,rgba(6,10,11,.35),rgba(6,10,11,.78)),url('assets/art_003.png') top center/cover fixed no-repeat,radial-gradient(ellipse at 35% 5%,#2c4345,#101a1e 70%);color:var(--text);font:14px system-ui,Segoe UI,sans-serif;margin:0}
+main{max-width:1280px;margin:auto;padding:118px 14px 50px}
+.heading{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;margin-bottom:12px;padding:8px 16px 10px;border-radius:14px;background:linear-gradient(180deg,rgba(10,22,27,.52),rgba(10,22,27,.38));border:1px solid rgba(226,191,131,.18);-webkit-backdrop-filter:blur(4px)}
+.heading h1{font:700 clamp(38px,8vw,70px) Georgia,serif;letter-spacing:.02em;line-height:.92;margin:0;color:#f0e2b3;text-shadow:0 2px 10px rgba(0,0,0,.78),0 0 18px rgba(0,0,0,.4)}.overline{letter-spacing:.23em;color:#e2bf83;font-size:11px}.muted{color:#c3d7d7}
+.grid{display:grid;grid-template-columns:minmax(0,760px) 380px;gap:18px}.panel{background:#173036df;border:1px solid #70898566;border-radius:16px;padding:18px;box-shadow:0 16px 40px #0007;backdrop-filter:blur(5px)}
+.status{text-align:center}.status h2{font:26px Georgia,serif;margin:0 0 4px}.status p{display:none}.status.game-over h2{font-size:clamp(30px,5vw,48px);color:var(--gold);text-shadow:0 2px 10px #000a}
+.board{touch-action:none;width:min(100%,620px);aspect-ratio:1;background:linear-gradient(145deg,#703f30,#8f5c4d 10%,#b97c59 50%,#6d3f34 96%);border:14px solid #6c3d31;border-radius:13px;display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(10,1fr);margin:14px auto;box-shadow:0 18px 36px #0009,inset 0 0 0 2px #9b6e5f,inset 0 0 0 8px #5c2d23;touch-action:none;position:relative;padding:10px}.cell{border:1px solid #8f7b59;background:linear-gradient(135deg,#f2e3bb,#dbc58f);position:relative;padding:0;cursor:pointer;min-width:0;min-height:0;transition:background .08s, box-shadow .08s;overflow:visible}.cell.alt{background:linear-gradient(135deg,#ebd9ae,#d4bd86)}.cell.territory1{background:linear-gradient(135deg,#fffef0,#f9f4ce)!important;box-shadow:inset 0 0 0 2px #fffee1aa,inset 0 0 14px #ffffff55}.cell.territory-1{background:linear-gradient(135deg,#a17968,#8b6657)}
+.cell.preview{box-shadow:inset 0 0 0 2px #d6f7e5,0 0 0 2px #3c7f69;background:linear-gradient(135deg,#91d4bb,#6bbaa0)!important}.cell.invalid{background:linear-gradient(135deg,#dc908b,#c46763)!important}.cell.last{outline:3px solid var(--gold);outline-offset:-2px;z-index:2}.cell.selectable{box-shadow:inset 0 0 0 1px #ffffff22}
+.cell .coordinate{font:9px system-ui;position:absolute;bottom:1px;left:2px;opacity:.42;pointer-events:none;color:#2c2116}
+.pieceFace,.stoneFace{position:absolute;inset:10% 9% 14% 9%;border-radius:3px;pointer-events:none;transform:translateY(-2px);box-shadow:0 3px 0 rgba(0,0,0,.24),0 7px 11px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.28),inset -2px -3px 0 rgba(0,0,0,.16)}.pieceFace.light{background-image:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0) 40%,rgba(0,0,0,.08) 100%),var(--lightTex);background-size:cover;border:1px solid #ab8c57}.pieceFace.dark{background-image:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,0) 42%,rgba(0,0,0,.14) 100%),var(--darkTex);background-size:cover;border:1px solid #562615}.stoneFace{background-image:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 40%,rgba(0,0,0,.14) 100%),repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 10px,rgba(48,48,48,.04) 10px 18px),linear-gradient(135deg,#6f7784,#59616c 58%,#454b54);border:1px solid #474c52}.cell .symbol{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(9px,1.5vw,18px);pointer-events:none;color:#fff8e4;text-shadow:0 1px 2px #0008;font-weight:700;transform:translateY(-2px)}.cell .symbol.neutral{color:#f8fbff}
+.legend,.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.legend{gap:12px;font-size:12px;color:#cad8d6}.swatch{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-1px;border:1px solid #0003}.swatch.light{background:linear-gradient(140deg,var(--lightWood1),var(--lightWood2) 60%,var(--lightWood3))}.swatch.dark{background:linear-gradient(140deg,var(--darkWood1),var(--darkWood2) 60%,var(--darkWood3))}.swatch.neutral{background:linear-gradient(140deg,var(--neutral1),var(--neutral2) 60%,var(--neutral3))}.swatch.hint{background:var(--hint)}
+.btn{border:1px solid #678382;border-radius:9px;background:#324b4e;color:#fff2e1;padding:9px 12px;cursor:pointer;font-weight:600}.btn:hover:not(:disabled){background:#456669}.btn.primary{background:#debd82;color:#283431;border-color:#debd82}.btn:disabled{opacity:.35;cursor:not-allowed}
+select{background:#2e494c;border:1px solid #658084;color:white;border-radius:8px;padding:9px;width:100%;font:inherit}.field{margin:12px 0}.field label{display:block;font-size:12px;color:#bfd0cf;margin:0 0 5px}
+.note{background:#294044;border-radius:9px;padding:10px;margin-top:12px;color:#d5e6e0;font-size:13px;line-height:1.45}.scores{display:flex;justify-content:space-around;margin:12px 0;gap:10px}.score{flex:1;border:1px solid #587372;padding:10px;border-radius:10px;text-align:center}.score strong{font-size:23px}.small{font-size:11px;color:#9bb7b8}
+.pieces{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.piece{display:flex;gap:10px;align-items:center;border:1px solid #526f70;background:#293e41;color:#eee6d5;padding:8px;border-radius:10px;cursor:pointer;text-align:left;min-height:74px}.piece.selected{border:2px solid #f2cf80;background:#3c5654}.piece.viewonly{cursor:default}.piece:disabled{opacity:.38;cursor:not-allowed}.pieceThumbWrap{width:82px;min-width:82px;height:60px;border-radius:8px;background:linear-gradient(180deg,#1b2e31,#243d40);display:grid;place-items:center;overflow:hidden}.pieceThumb{max-width:78px;max-height:56px;width:auto;height:auto;display:block;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}.shape{display:grid;grid-template-columns:repeat(5,10px);grid-template-rows:repeat(5,10px);gap:0;flex-shrink:0}.shape i{display:block;width:10px;height:10px;border-radius:1px;background:transparent}.shape i.filled.light{background-image:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0) 38%,rgba(0,0,0,.1) 100%),linear-gradient(135deg,#f3e2b8,#ddc488 58%,#bf9c60);border:1px solid #b89961;box-shadow:0 1px 0 rgba(0,0,0,.18)}.shape i.filled.dark{background-image:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,0) 40%,rgba(0,0,0,.13) 100%),linear-gradient(135deg,#945627,#7b3a1b 58%,#5c2915);border:1px solid #5f3918;box-shadow:0 1px 0 rgba(0,0,0,.18)}.shape i.filled.neutral{background-image:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0) 40%,rgba(0,0,0,.12) 100%),linear-gradient(135deg,#74808f,#5a6370 58%,#464b55);border:1px solid #94989c;box-shadow:0 1px 0 rgba(0,0,0,.18)}.pieceName{font-weight:650;font-size:12px}.pieceMeta{font-size:11px;color:#acc4c3}
+.history{max-height:220px;overflow:auto;color:#c0d3d1;font-size:12px}.history div{padding:5px 1px;border-bottom:1px solid #ffffff15}.info{font-size:13px;color:#c3d4d1;line-height:1.55}.info p{margin:8px 0}.menuSection{margin-top:10px}.menuSection details{border:1px solid #6a837d;background:#213a3ddd;border-radius:11px;margin:10px 0;overflow:hidden}.menuSection summary{cursor:pointer;list-style:none;padding:12px 14px;font-weight:700;color:#f3ead6;background:linear-gradient(180deg,#29464a,#20383c)}.menuSection summary::-webkit-details-marker{display:none}.menuSection .detailBody{padding:12px 14px}.settingsList{margin:0;padding-left:18px;color:#c7d8d5;line-height:1.55;font-size:13px}.settingsList li+li{margin-top:8px}hr{border:0;border-top:1px solid #526b6b;margin:15px 0}
+@media(max-width:980px){.grid{grid-template-columns:1fr}.heading h1{font-size:30px}}
+@media(max-width:510px){main{padding-top:92px}.panel{padding:10px}.board{border-width:7px}.pieces{gap:4px}.piece{padding:5px;gap:5px;min-height:66px}.pieceThumbWrap{width:68px;min-width:68px;height:50px}.pieceThumb{max-width:64px;max-height:46px}.shape{grid-template-columns:repeat(5,8px);grid-template-rows:repeat(5,8px)}.shape i{width:8px;height:8px}.heading h1{font-size:clamp(36px,15vw,56px)}.building-header{flex-direction:column;align-items:flex-start}.building-header select{width:100%}}
+.board-buildings{margin:12px auto 16px;max-width:620px;border:1px solid #66837d;border-radius:12px;background:#24393b;padding:10px;display:flex;flex-direction:column}.building-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:8px;padding-top:10px;border-top:1px solid rgba(214,228,226,.16)}.building-header h3{font:20px Georgia,serif;margin:3px 0}.building-header select{width:auto;max-width:100%}.board-buildings .pieces{grid-template-columns:repeat(3,minmax(0,1fr))}.board-buildings .piece{min-height:58px}@media(max-width:600px){.board-buildings .pieces{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.placement-toolbar{max-width:620px;margin:8px auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.placement-toolbar .btn{min-height:45px;width:100%}.board-buildings .pieces{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:7px 0}.board-buildings .piece{min-height:52px;padding:4px;gap:5px}.board-buildings .pieceMeta{display:none}.board-buildings .pieceName{font-size:11px}.board-buildings .piece.selected{border-width:2px}@media(max-width:540px){.board-buildings .pieces{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Real photographed wood pieces, isolated against user-supplied white backdrop and precisely masked to board-grid footprints. */
+.board.photoEdition .pieceFace,.board.photoEdition .stoneFace,.board.photoEdition .symbol{display:none!important}
+.board .photoLayer{position:absolute;inset:10px;pointer-events:none;z-index:4;overflow:visible}
+.board .photoSprite{position:absolute;display:block;object-fit:fill;max-width:none;max-height:none;filter:none;pointer-events:none;user-select:none;-webkit-user-drag:none}
+.board .photoSprite.lastPlaced{filter:none}
+.board .photoSprite.photoGhost{opacity:.72;filter:none;z-index:8}
+.board.photoEdition .cell.last{outline:none!important}.board .lastPieceOutline{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:12;overflow:visible}.board .lastPieceOutline path{fill:none;stroke-linejoin:round;stroke-linecap:round}.board .lastPieceOutline .outlineGlow{stroke:#e8aa31;stroke-width:1.65;opacity:.35}.board .lastPieceOutline .outlineCore{stroke:#ffe08b;stroke-width:.48;opacity:1}
+.board-buildings .pieceThumbWrap{background:#22373a;}
+.board-buildings .pieceThumb{object-fit:contain;image-rendering:auto;filter:none}
+@media(max-width:510px){.board .photoLayer{inset:10px}}
+
+
+/* v17 — Original gothic desktop art, portrait mobile variant; title is part of the art. */
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+main{padding-top:clamp(135px,12vw,185px)}
+.heading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:28px;margin:0 0 12px;padding:6px 10px 8px;background:linear-gradient(180deg,rgba(8,18,22,.44),rgba(8,18,22,.24));border:1px solid rgba(226,191,131,.14);border-radius:14px;box-shadow:0 10px 22px rgba(0,0,0,.18);-webkit-backdrop-filter:blur(2px)}
+.game-tagline{margin:0;text-align:center;font:700 clamp(10px,1.5vw,15px) Georgia,'Times New Roman',serif;letter-spacing:.19em;color:#f1d7a0;text-shadow:0 2px 6px #000,0 1px 1px #000;max-width:100%}
+.grid>section.panel{background:rgba(13,31,35,.37);border:1px solid rgba(220,188,130,.28);-webkit-backdrop-filter:blur(1.25px)}
+.grid>section.panel .status h2{text-shadow:0 2px 5px #001a1de8}
+@media(max-width:680px){
+  body{background-color:#101c21;
+    background-image:linear-gradient(180deg,rgba(6,14,17,.02) 0%,rgba(8,16,20,.04) 24%,rgba(8,16,20,.32) 70%,rgba(8,16,20,.70) 100%),url('assets/art_003.png');
+    background-position:center top,center top;
+    background-size:100% 100%,100% auto;
+    background-repeat:no-repeat,no-repeat;
+    background-attachment:fixed,fixed;
+  }
+  main{padding:clamp(106px,29vw,162px) 8px 34px}
+  .heading{min-height:22px;margin:0 0 12px}
+  .game-tagline{font-size:clamp(10px,2.8vw,14px);letter-spacing:.12em}
+  .grid{gap:12px}
+  .grid>section.panel{background:rgba(10,30,35,.30);border-color:rgba(224,188,125,.23);box-shadow:0 10px 30px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(.75px)}
+  .board{margin:10px auto 12px}
+}
+
+/* v19: the title image is a real scrolling element. The background contains no lettering. */
+main{padding-top:20px}
+.heading{background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;margin:0 auto 12px;padding:6px 0 4px;max-width:790px;gap:0}
+.heading h1.visual-title{width:100%;max-width:710px;margin:0 auto!important;padding:0;line-height:0}
+.cathedral-logo{display:block;width:100%;height:auto;max-height:190px;object-fit:contain;filter:none}
+.heading .game-tagline{margin:0 auto 1px;font-size:clamp(11px,1.6vw,16px);letter-spacing:.15em;line-height:1.2}
+@media(max-width:680px){main{padding-top:8px!important}.heading{margin-bottom:9px;padding:2px 5px 4px}.heading h1.visual-title{width:100%;max-width:100%}.cathedral-logo{max-height:none}.heading .game-tagline{font-size:clamp(9px,2.55vw,13px);letter-spacing:.095em;padding:0 2px}.grid{gap:12px}}
+
+/* v27: compact mobile controls, optional correctly aligned gallery labels */
+.button-short{display:none}
+#notice{display:none!important}
+.names-toggle{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font:12px system-ui,sans-serif;color:#e5e3d4;white-space:nowrap}
+.names-toggle input{width:16px;height:16px;margin:0;accent-color:#ebc77e}
+.board-buildings:not(.show-names) .pieceName{display:none!important}
+.board-buildings:not(.show-names) .piece{justify-content:center;min-height:56px}
+.board-buildings.show-names .piece{flex-direction:column;justify-content:center;align-items:center;gap:3px;min-height:76px;text-align:center;padding:5px 3px}
+.board-buildings.show-names .pieceName{display:block;font-size:10px;line-height:1.15;white-space:normal;overflow-wrap:normal}
+.board-buildings.show-names .pieceThumbWrap{margin:auto;max-width:100%;flex-shrink:0}
+@media(max-width:680px){
+ .button-long{display:none!important}.button-short{display:inline}
+ .placement-toolbar .btn{min-height:38px;padding:6px 8px;font-size:14px}
+ .board-buildings .building-header{display:flex;flex-direction:column;align-items:center;gap:8px}
+ .board-buildings .building-header h3{font-size:clamp(17px,5vw,24px);text-align:center}
+ .board-buildings:not(.show-names) .piece{min-height:56px;padding:3px 2px}
+ .board-buildings:not(.show-names) .pieceThumbWrap{max-width:100%}
+ .board-buildings.show-names .piece{min-height:76px}
+ .board-buildings .building-header select{width:min(100%,280px)}
+}
+/* v30: all piece textures and Gothic title re-embedded from original approved PNG files. */
+
+/* v33: no browser-native scroll snap: the title stays visible when the page first loads.
+   The board's exact top pixel is an optional alignment point after USER scrolling only. */
+.board-buildings .pieces { grid-auto-rows: auto; align-items: stretch; }
+/* Only the two 1x1 Taverns form the short final gallery row. */
+.board-buildings:not(.show-names) .piece.tavern-thumb { min-height: 42px; padding: 2px; }
+.board-buildings .piece.tavern-thumb .pieceThumbWrap { width: 38px; min-width: 38px; height: 33px; max-width: 100%; }
+.board-buildings .piece.tavern-thumb .pieceThumb { max-width: 31px; max-height: 31px; }
+.board-buildings.show-names .piece.tavern-thumb { min-height: 62px; }
+@media(max-width:680px) {
+  .board-buildings:not(.show-names) .piece.tavern-thumb { min-height: 42px; padding: 2px; }
+  .board-buildings.show-names .piece.tavern-thumb { min-height: 62px; }
+}
+
+
+/* v37: The border is a transparent overlay precisely matched to the board,
+   without any legacy frame or empty gap. The 10x10 board itself is unchanged. */
+.board-frame {
+  width:min(100%,700px) !important;
+  max-width:700px !important;
+  aspect-ratio:1 / 1;
+  position:relative;
+  margin:12px auto 14px !important;
+  padding:0 !important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:none !important;
+  box-sizing:border-box;
+}
+.board-frame::after {
+  content:'';
+  position:absolute;
+  inset:0 !important;
+  z-index:7;
+  pointer-events:none;
+  background:url('assets/art_004.png') center/100% 100% no-repeat;
+}
+.board-frame .board {
+  width:88.6666667% !important;
+  height:88.6666667% !important;
+  aspect-ratio:1 / 1;
+  flex:0 0 auto;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  overflow:visible !important;
+  position:relative;
+  z-index:2;
+}
+.board-frame .board .photoLayer{inset:0 !important}
+@media(max-width:680px) {
+  .grid>section.panel:first-child {margin-left:-8px;margin-right:-8px;padding-left:10px;padding-right:10px}
+  .board-frame {width:100% !important; margin:10px auto 14px !important}
+}
+
+/* v39: reposition ONLY the four original corner tower images diagonally outward.
+   The rails below stay unchanged, while towers overlay their ends. */
+.board-frame .frame-corner {
+  position:absolute;
+  width:9.333333%; height:9.333333%;
+  display:block; object-fit:fill;
+  pointer-events:none; user-select:none;
+  z-index:9;
+}
+.board-frame .frame-corner-tl {left:-1.1%; top:-1.1%;}
+.board-frame .frame-corner-tr {right:-1.1%; top:-1.1%;}
+/* Bottom towers nudged slightly outward and upward so they fully cover the rail joins. */
+.board-frame .frame-corner-bl {left:-1.38%; bottom:-0.48%;}
+.board-frame .frame-corner-br {right:-1.38%; bottom:-0.48%;}
+/* v43: bottom tower sprites slightly enlarged and shifted to fully hide tiny rail remnants. */
+.board-frame .frame-corner-bl,.board-frame .frame-corner-br{width:9.8%;height:9.8%;}
+.board-frame .frame-corner-bl{left:-1.62%;bottom:-0.34%;}
+.board-frame .frame-corner-br{right:-1.62%;bottom:-0.34%;}
+
+
+/* v47: clean symmetric corners; rails now extend beneath them in frame PNG. */
+.board-frame .frame-corner-bl,.board-frame .frame-corner-br {width:9.333333%;height:9.333333%;}
+.board-frame .frame-corner-bl {left:-1.1%;bottom:-1.1%;}
+.board-frame .frame-corner-br {right:-1.1%;bottom:-1.1%;}
+
+/* v48: all four crenellation towers use the SAME two top sprite sources.
+   Outward offsets are symmetric around the exact board frame; neither board
+   squares nor rail artwork nor piece textures are changed. */
+.board-frame .frame-corner {
+  width:9.333333% !important;
+  height:9.333333% !important;
+}
+.board-frame .frame-corner-tl {left:-2.05% !important;top:-2.05% !important;}
+.board-frame .frame-corner-tr {right:-2.05% !important;top:-2.05% !important;}
+.board-frame .frame-corner-bl {left:-2.05% !important;bottom:-2.05% !important;}
+.board-frame .frame-corner-br {right:-2.05% !important;bottom:-2.05% !important;}
+
+/* v49: Pass fills previously empty third slot beside two Taverns, preserving gallery dimensions. */
+.board-buildings .pieces .gallery-pass{
+  width:100%; min-width:0; min-height:42px; height:100%;
+  padding:4px 6px; margin:0; align-self:stretch;
+  font-size:clamp(12px,2.9vw,16px); font-weight:700;
+  border:1px solid #66837d; border-radius:11px;
+  background:linear-gradient(180deg,#34565a,#27464a);color:#f5e9d4;
+}
+.board-buildings .pieces .gallery-pass:disabled{opacity:.42;cursor:not-allowed}
+.auto-pass-setting{display:flex;gap:9px;align-items:flex-start;margin-top:14px;color:#d7e2dc;font-size:13px;line-height:1.4;cursor:pointer}
+.auto-pass-setting input{flex:none;margin-top:2px;accent-color:#daba7d;width:18px;height:18px}
+</style>
+</head>
+<body>
+<main>
+<header class="heading" aria-label="Cathedral — The Medieval City Strategy Game">
+  <h1 class="visual-title"><img class="cathedral-logo" src="assets/art_005.png" alt="Cathedral"></h1>
+  <p class="game-tagline">THE MEDIEVAL CITY STRATEGY GAME</p>
+</header>
+<div class="grid">
+  <section class="panel">
+    <div class="status"><h2 id="status">Place the Cathedral</h2><p id="subtitle">Select a legal placement on the board.</p></div>
+    <div class="board-frame" id="boardSnap"><div class="board" id="board" aria-label="Cathedral game board"></div><img class="frame-corner frame-corner-tl" alt="" aria-hidden="true" src="assets/art_006.png"><img class="frame-corner frame-corner-tr" alt="" aria-hidden="true" src="assets/art_007.png"><img class="frame-corner frame-corner-bl" alt="" aria-hidden="true" src="assets/art_006.png"><img class="frame-corner frame-corner-br" alt="" aria-hidden="true" src="assets/art_007.png"></div>
+    <div class="placement-toolbar"><button class="btn" id="rot"><span class="button-long">↻ Rotate (R / right-click)</span><span class="button-short">↻ Rotate</span></button><button class="btn primary" id="drop"><span class="button-long">↓ Drop piece (D / Enter)</span><span class="button-short">↓ Drop</span></button></div><div class="board-buildings"><div class="pieces" id="pieces"><button class="btn gallery-pass" id="skip" type="button">Pass</button></div><div class="building-header"><h3>Available buildings <span id="whose"></span></h3><label class="names-toggle" for="shownames"><input type="checkbox" id="shownames"> Show names</label><select id="showset" aria-label="Buildings to display"><option value="player" selected>My buildings</option><option value="opponent">Opponent's buildings</option><option value="light">Light buildings</option><option value="dark">Dark buildings</option></select></div></div>
+    <div class="legend">
+      <span><i class="swatch light"></i>Light</span>
+      <span><i class="swatch dark"></i>Dark</span>
+      <span><i class="swatch neutral"></i>Cathedral</span>
+      <span><i class="swatch hint"></i>Legal preview</span>
+    </div>
+    <div class="controls" style="margin-top:10px">
+      <button class="btn" id="undo">↶ Undo</button>
+      <button class="btn" id="hint">✧ Suggest move</button>
+    </div>
+    <div class="note" id="notice" hidden aria-hidden="true"></div>
+    <div class="scores"><div class="score"><div>Light unplaced</div><strong id="score1">0</strong> <span class="small">squares</span></div><div class="score"><div>Dark unplaced</div><strong id="score2">0</strong> <span class="small">squares</span></div></div>
+  </section>
+  <aside class="panel">
+    <h2 style="font:23px Georgia,serif;margin:0">Game settings</h2>
+    <div class="controls"><button class="btn primary" style="width:100%" id="new">Start new game</button></div>
+    <div class="field"><label for="mode">Opponent</label><select id="mode"><option value="ai">Against AI</option><option value="human">Two players · same device</option></select></div>
+    <div class="field"><label for="side">Your colour</label><select id="side"><option value="-1">Dark · first building move</option><option value="1">Light · second player</option></select></div>
+    <div class="field"><label for="variant">Starting moves</label><select id="variant"><option value="standard" selected>Standard · Light places Cathedral first</option><option value="lehman">Tom Lehman variant</option></select></div>
+    <div class="field"><label for="difficulty">AI strength</label><select id="difficulty"><option value="noob">Noob · random</option><option value="easy" selected>Beginner</option><option value="normal">Club player · tactical lookahead</option><option value="expert">Expert · deeper strategic search</option><option value="master">Master · deepest strategic search</option></select></div>
+    <div class="menuSection">
+      <details>
+        <summary>Controls</summary>
+        <div class="detailBody">
+          <ul class="settingsList">
+            <li>On mobile, touch-drag over the board to preview a placement, then tap <strong>Drop piece</strong>.</li>
+            <li>On desktop, left-click to place after previewing. Right-click or the <strong>Rotate</strong> button rotates the current building.</li>
+            <li>Keyboard shortcuts: <strong>R</strong> rotates, <strong>D</strong> or <strong>Enter</strong> drops the current legal placement.</li>
+          </ul>
+          <label class="auto-pass-setting" for="autoPassEnabled"><input type="checkbox" id="autoPassEnabled" checked> Automatically repeat Pass when no move is available (after first pass)</label>
+        </div>
+      </details>
+      <details>
+        <summary>Move history</summary>
+        <div class="detailBody"><div class="history" id="history">No moves yet.</div></div>
+      </details>
+      <details>
+        <summary>Game rules</summary>
+        <div class="detailBody info">
+          <p>Claims require a true wall-to-wall enclosure using your own buildings and/or the city wall. Corner touching does not count. The Cathedral never forms part of a boundary.</p>
+          <p>If an enclosed region contains exactly one opposing building or the Cathedral, that piece is removed immediately and you claim the region. A captured opposing building may be played again; the Cathedral is permanently removed. A region containing two or more such pieces cannot be claimed. Multiple separate regions completed by a single move are assessed independently.</p>
+          <p>Neither player may claim territory on their first building move. When neither player can place another building, the player with the lower total of unplaced squares wins.</p>
+        </div>
+      </details>
+    </div>
+  </aside>
+</div>
+</main>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);
+const N=10, STORAGE_KEY='cathedral_trainer_v15_artwork';
+const LETTERS='ABCDEFGHIJ';
+const SIDE_NAME={1:'Light', '-1':'Dark', 0:'Neutral'};
+const LIGHT_PIECE_LIBRARY=[
+  {base:'Tavern', label:'Tavern 1', cells:[[0,0]]},
+  {base:'Tavern', label:'Tavern 2', cells:[[0,0]]},
+  {base:'Stable', label:'Stable 1', cells:[[0,0],[0,1]]},
+  {base:'Stable', label:'Stable 2', cells:[[0,0],[0,1]]},
+  {base:'Inn', label:'Inn 1', cells:[[0,0],[0,1],[1,1]]},
+  {base:'Inn', label:'Inn 2', cells:[[0,0],[0,1],[1,1]]},
+  {base:'Bridge', label:'Bridge', cells:[[0,0],[0,1],[0,2]]},
+  {base:'Square', label:'Square', cells:[[0,0],[1,0],[0,1],[1,1]]},
+  // Light Abbey = S shape; Dark Abbey = mirrored Z shape.
+  {base:'Abbey', label:'Abbey', cells:[[0,0],[0,1],[1,1],[1,2]]},
+  {base:'Manor', label:'Manor', cells:[[1,0],[0,1],[1,1],[2,1]]},
+  {base:'Infirmary', label:'Infirmary', cells:[[1,0],[0,1],[1,1],[2,1],[1,2]]},
+  {base:'Castle', label:'Castle', cells:[[0,0],[2,0],[0,1],[1,1],[2,1]]},
+  {base:'Tower', label:'Tower', cells:[[2,0],[1,1],[2,1],[0,2],[1,2]]},
+  // Light Academy = L shape with an extra block on the left side.
+  {base:'Academy', label:'Academy', cells:[[1,0],[0,1],[1,1],[1,2],[2,2]]},
+];
+const DARK_PIECE_LIBRARY=[
+  {base:'Tavern', label:'Tavern 1', cells:[[0,0]]},
+  {base:'Tavern', label:'Tavern 2', cells:[[0,0]]},
+  {base:'Stable', label:'Stable 1', cells:[[0,0],[0,1]]},
+  {base:'Stable', label:'Stable 2', cells:[[0,0],[0,1]]},
+  {base:'Inn', label:'Inn 1', cells:[[0,0],[0,1],[1,1]]},
+  {base:'Inn', label:'Inn 2', cells:[[0,0],[0,1],[1,1]]},
+  {base:'Bridge', label:'Bridge', cells:[[0,0],[0,1],[0,2]]},
+  {base:'Square', label:'Square', cells:[[0,0],[1,0],[0,1],[1,1]]},
+  // Dark Abbey = Z shape, mirrored from Light.
+  {base:'Abbey', label:'Abbey', cells:[[1,0],[0,1],[1,1],[0,2]]},
+  {base:'Manor', label:'Manor', cells:[[1,0],[0,1],[1,1],[2,1]]},
+  {base:'Infirmary', label:'Infirmary', cells:[[1,0],[0,1],[1,1],[2,1],[1,2]]},
+  {base:'Castle', label:'Castle', cells:[[0,0],[2,0],[0,1],[1,1],[2,1]]},
+  {base:'Tower', label:'Tower', cells:[[2,0],[1,1],[2,1],[0,2],[1,2]]},
+  // Dark Academy = backward L with an extra block on the right side.
+  {base:'Academy', label:'Academy', cells:[[1,0],[1,1],[2,1],[0,2],[1,2]]},
+];
+const CATHEDRAL={base:'Cathedral', label:'Cathedral', cells:[[1,0],[0,1],[1,1],[2,1],[1,2],[1,3]]};
+
+const PHOTO_SPRITES={"1":{"Tavern":["assets/art_008.png","assets/art_009.png","assets/art_010.png","assets/art_011.png"],"Stable":["assets/art_012.png","assets/art_013.png","assets/art_014.png","assets/art_015.png"],"Inn":["assets/art_016.png","assets/art_017.png","assets/art_018.png","assets/art_019.png"],"Bridge":["assets/art_020.png","assets/art_021.png","assets/art_022.png","assets/art_023.png"],"Square":["assets/art_024.png","assets/art_025.png","assets/art_026.png","assets/art_027.png"],"Abbey":["assets/art_028.png","assets/art_029.png","assets/art_030.png","assets/art_031.png"],"Manor":["assets/art_032.png","assets/art_033.png","assets/art_034.png","assets/art_035.png"],"Infirmary":["assets/art_036.png","assets/art_037.png","assets/art_038.png","assets/art_039.png"],"Castle":["assets/art_040.png","assets/art_041.png","assets/art_042.png","assets/art_043.png"],"Tower":["assets/art_044.png","assets/art_045.png","assets/art_046.png","assets/art_047.png"],"Academy":["assets/art_048.png","assets/art_049.png","assets/art_050.png","assets/art_051.png"]},"-1":{"Tavern":["assets/art_052.png","assets/art_053.png","assets/art_054.png","assets/art_055.png"],"Stable":["assets/art_056.png","assets/art_057.png","assets/art_058.png","assets/art_059.png"],"Inn":["assets/art_060.png","assets/art_061.png","assets/art_062.png","assets/art_063.png"],"Bridge":["assets/art_064.png","assets/art_065.png","assets/art_066.png","assets/art_067.png"],"Square":["assets/art_068.png","assets/art_069.png","assets/art_070.png","assets/art_071.png"],"Abbey":["assets/art_072.png","assets/art_073.png","assets/art_074.png","assets/art_075.png"],"Manor":["assets/art_076.png","assets/art_077.png","assets/art_078.png","assets/art_079.png"],"Infirmary":["assets/art_080.png","assets/art_081.png","assets/art_082.png","assets/art_083.png"],"Castle":["assets/art_084.png","assets/art_085.png","assets/art_086.png","assets/art_087.png"],"Tower":["assets/art_088.png","assets/art_089.png","assets/art_090.png","assets/art_091.png"],"Academy":["assets/art_092.png","assets/art_093.png","assets/art_094.png","assets/art_095.png"]},"0":{"Cathedral":["assets/art_096.png","assets/art_097.png","assets/art_098.png","assets/art_099.png"]}};
+function getPhoto(side,base,rot=0){return PHOTO_SPRITES[String(side)]?.[base]?.[(rot+4)%4]||null;}
+let g, hover=-1, clock=null, autoPassTimer=null, suppressClickDropUntil=0;
+
+const clone=x=>JSON.parse(JSON.stringify(x));
+const keyOf=(pts)=>normalize(pts).map(([x,y])=>x+':'+y).sort().join(';');
+const rotate=pts=>pts.map(([x,y])=>[-y,x]);
+function normalize(pts){const minx=Math.min(...pts.map(p=>p[0])), miny=Math.min(...pts.map(p=>p[1])); return pts.map(([x,y])=>[x-minx,y-miny]);}
+function uniqueRotations(piece){const out=[]; const seen=new Set(); let pts=piece.cells; for(let r=0;r<4;r++){if(r)pts=rotate(pts); const n=normalize(pts); const sig=keyOf(n); if(!seen.has(sig)){seen.add(sig); out.push({r,cells:n});}} return out;}
+const ORIENT_CACHE=new Map();
+function orientations(piece){const k=piece.base+'|'+piece.label+'|'+keyOf(piece.cells); if(!ORIENT_CACHE.has(k)) ORIENT_CACHE.set(k, uniqueRotations(piece)); return ORIENT_CACHE.get(k);}
+function mkPieces(){const mk=(lib,side)=>lib.map((d,i)=>({id:i,side,base:d.base,label:d.label,cells:d.cells,placed:false})); return {1:mk(LIGHT_PIECE_LIBRARY,1), '-1':mk(DARK_PIECE_LIBRARY,-1)};}
+function cellXY(i){return [i%N, Math.floor(i/N)];}
+function cellName(i){const [x,y]=cellXY(i); return LETTERS[x]+(y+1);}
+function actorSide(){return g.turn;}
+function currentPiece(){ if(g.expect==='cathedral') return CATHEDRAL; const side=actorSide(); return g.pieces[side]?.find(p=>p.id===g.selected[side]) || g.pieces[side]?.find(p=>!p.placed) || null; }
+function currentViewerSide(){const mode=$('showset').value; if(mode==='light') return 1; if(mode==='dark') return -1; if(mode==='opponent') return g.mode==='human'?-g.turn:-g.human; return g.mode==='human'?g.turn:g.human;}
+function syncTurnPieceDisplay(){if(g.mode==='human')$('showset').value='player';}
+function cellsFor(piece, anchor, rotIndex){ const orient=orientations(piece)[rotIndex]; if(!orient) return null; const [x,y]=cellXY(anchor); if(orient.cells.some(([dx,dy])=>x+dx<0||y+dy<0||x+dx>=N||y+dy>=N)) return null; return orient.cells.map(([dx,dy])=>(y+dy)*N+(x+dx)); }
+function legalPlacement(state, side, pieceId, rotIndex, anchor){ const piece=(side===0?CATHEDRAL:state.pieces[side].find(p=>p.id===pieceId)); if(!piece || (side!==0 && piece.placed)) return null; const cells=cellsFor(piece, anchor, rotIndex); if(!cells) return null; for(const i of cells){ if(state.board[i]!==0) return null; if(side!==0 && state.territory[i]!==0 && state.territory[i]!==side) return null; }
+ return cells; }
+function snapshot(){ g.snap.push(JSON.stringify({...g,snap:[]})); if(g.snap.length>120) g.snap.shift(); }
+function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(g)); }catch(e){} }
+function remainingScore(state, side){ return state.pieces[side].filter(p=>!p.placed).reduce((sum,p)=>sum+p.cells.length,0); }
+// Diagonal gaps are traversable: two buildings touching only at a corner do not enclose territory.
+function publicComponents(state, owner){ const blocked=new Set(); for(let i=0;i<100;i++){ if(state.board[i]===owner || state.territory[i]===owner) blocked.add(i); }
+ const seen=new Set(), comps=[];
+ for(let i=0;i<100;i++){
+   if(blocked.has(i) || seen.has(i)) continue;
+   const comp=[], stack=[i]; seen.add(i);
+   while(stack.length){ const cur=stack.pop(); comp.push(cur); const [x,y]=cellXY(cur); const nb=[];for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){if(!dx&&!dy)continue;const xx=x+dx,yy=y+dy;if(xx>=0&&xx<10&&yy>=0&&yy<10)nb.push(yy*10+xx);}
+     for(const n of nb){ if(n<0 || blocked.has(n) || seen.has(n)) continue; seen.add(n); stack.push(n); }
+   }
+   comps.push(comp);
+ }
+ return comps; }
+// Official Cathedral interpretation: a single move may close several distinct
+// regions, including one containing the Cathedral and another with an opposing
+// building. Every NEW region created by the move is tested independently;
+// no automatic largest/smallest exclusion is applied.
+// Eight-neighbour connectivity keeps corner-only contacts permeable.
+function newlyClosedComponents(previous,current,state){
+ if(!previous || !current.length)return [];
+ const beforeIndex=new Int16Array(100).fill(-1);
+ previous.forEach((comp,k)=>comp.forEach(i=>{beforeIndex[i]=k;}));
+ const children=Array.from({length:previous.length},()=>[]);
+ for(const comp of current){
+   const p=beforeIndex[comp[0]];
+   if(p<0 || comp.some(i=>beforeIndex[i]!==p))continue;
+   children[p].push(comp);
+ }
+ const newlyClosed=[];
+ for(const siblings of children){
+   if(siblings.length<2)continue;
+   // BOTH sides of a newly sealed wall may be claimed, provided each side
+   // separately contains at most one foreign building OR the Cathedral.
+   newlyClosed.push(...siblings);
+ }
+ return newlyClosed;
+}
+function resolveClaims(state,side,canClaim,beforeComponents){
+ if(!canClaim || !beforeComponents)return {captured:[],claimed:0};
+ const candidates=newlyClosedComponents(beforeComponents,publicComponents(state,side),state);
+ let captured=[],claimed=0;
+ for(const comp of candidates){
+   const inRegion=new Set(comp);
+   const enemyPieces=new Set();
+   let hasCathedral=false;
+   for(const i of comp){
+     if(state.board[i]===2)hasCathedral=true;
+     const id=state.which[i];
+     if(id&&state.registry[id]?.side===-side)enemyPieces.add(id);
+   }
+   // Count the Cathedral as ONE piece for enclosure/capture purposes.
+   // A Cathedral plus any opposing building, or two opposing buildings,
+   // makes this individual region ineligible for capture/claim.
+   const foreignCount=enemyPieces.size+(hasCathedral?1:0);
+   if(foreignCount>1)continue;
+   if(hasCathedral){
+     const cathedral=state.registry.cathedral;
+     if(!cathedral || !cathedral.cells.every(i=>inRegion.has(i)))continue;
+     for(const i of cathedral.cells){state.board[i]=0;state.which[i]=null;}
+     delete state.registry.cathedral;
+     captured.push('Cathedral'); // permanently removed, never replayed
+   }else if(enemyPieces.size===1){
+     const id=[...enemyPieces][0],obj=state.registry[id];
+     if(!obj||!obj.cells.every(i=>inRegion.has(i)))continue;
+     captured.push(obj.label||obj.name||id);
+     for(const i of obj.cells){state.board[i]=0;state.which[i]=null;}
+     const piece=state.pieces[obj.side]?.find(p=>p.id===obj.pieceId);
+     if(piece)piece.placed=false;
+     delete state.registry[id];
+   }
+   // Every empty square in the newly closed region becomes the mover's
+   // territory, including any previously controlled by the other player.
+   for(const i of comp)if(state.board[i]===0&&state.territory[i]!==side){
+     state.territory[i]=side;claimed++;
+   }
+ }
+ return {captured,claimed};
+}
+function chooseNextSelected(side){ const next=g.pieces[side].find(p=>!p.placed); if(next) g.selected[side]=next.id; }
+function finishMove(afterText=''){ if(g.status!=='playing') return; if(g.expect==='cathedral'){
+    if(g.variant==='standard'){
+      g.expect='building'; g.turn=-1; g.notice='Dark now places the first building.';
+    }else if(g.variant==='lehman'){
+      g.expect='building'; g.notice='Tom Lehman variant: Light now places its first building.'; // same turn retained
+    }
+  } else {
+    const sideJustMoved=g.justMoved;
+    g.passes=0;
+    if(g.variant==='lehman' && !g.cathedralPlaced && sideJustMoved===-1 && g.turns[-1]===1 && g.turns[1]===0){
+      g.turn=1; g.expect='cathedral'; g.notice='Tom Lehman variant: Light now places the Cathedral, then its first building.';
+    } else {
+      g.turn=-sideJustMoved; g.expect='building'; g.notice=afterText || 'Choose a building and click a legal placement.';
+    }
+  }
+  chooseNextSelected(1); chooseNextSelected(-1);
+  syncTurnPieceDisplay();
+  render();
+  continueTurns();
+}
+function applyMove(side, pieceId, rotIndex, anchor){ if(g.status!=='playing') return false; snapshot(); const beforeComponents=side===0?null:publicComponents(g,side); const cells=legalPlacement(g, side, pieceId, rotIndex, anchor); if(!cells){ g.snap.pop(); return false; }
+ const piece=(side===0?CATHEDRAL:g.pieces[side].find(p=>p.id===pieceId)); const moveSideLabel=side===0?'Neutral':SIDE_NAME[side]; const id=side===0?'cathedral':`${side}_${pieceId}_${g.move}`;
+ cells.forEach(i=>{ g.board[i]=side===0?2:side; g.which[i]=id; });
+ g.registry[id]={side,pieceId,cells:[...cells],name:piece.base,label:piece.label};
+ g.last=[...cells];
+ g.move++;
+ let msg=`${piece.label} placed.`;
+ if(side===0){ g.cathedralPlaced=true; g.history.push(`${g.history.length+1}. Neutral Cathedral · ${cellName(anchor)}`); }
+ else {
+   const canClaim=(g.turns[side]>0); g.pieces[side].find(p=>p.id===pieceId).placed=true; g.turns[side]++;
+   const outcome=resolveClaims(g, side, canClaim, beforeComponents);
+   if(outcome.captured.length){ msg=`${piece.label} placed. Captured: ${outcome.captured.join(', ')}.`; }
+   else if(outcome.claimed){ msg=`${piece.label} placed. Territory claimed.`; }
+   else if(!canClaim){ msg=`${piece.label} placed. No claim is possible on ${SIDE_NAME[side]}'s first building move.`; }
+   g.history.push(`${g.history.length+1}. ${moveSideLabel} ${piece.label} · ${cellName(anchor)}${outcome.captured.length?` · capture ${outcome.captured.join(', ')}`:''}${outcome.claimed?` · claim ${outcome.claimed}`:''}`);
+ }
+ g.justMoved=(side===0?g.turn:side); // in cathedral phase current player remains meaningful
+ if(side===0 && g.variant==='lehman') g.justMoved=g.turn; // Light still to place a building
+ g.notice=msg; if(side===0){ finishMove(msg); } else { finishMove(msg); }
+ return true; }
+function allMoves(state, side, limit=4000){ const moves=[]; for(const p of state.pieces[side]){ if(p.placed) continue; const rots=orientations(p); for(let r=0;r<rots.length;r++) for(let a=0;a<100;a++){ const cells=legalPlacement(state, side, p.id, r, a); if(cells){ moves.push({piece:p.id,r,a,cells}); if(moves.length>=limit) return moves; } } } return moves; }
+function cathedralMoves(state, limit=500){ const rots=orientations(CATHEDRAL); const moves=[]; for(let r=0;r<rots.length;r++) for(let a=0;a<100;a++){ const cells=legalPlacement(state,0,0,r,a); if(cells){ moves.push({piece:0,r,a,cells}); if(moves.length>=limit) return moves; } } return moves; }
+function evaluateMove(state, side, move){ const beforeTerr=state.territory.filter(v=>v===side).length; const tmp=clone(state);
+ if(side===0){ const cells=legalPlacement(tmp,0,0,move.r,move.a); if(!cells) return -1e9; const id='cathedral'; cells.forEach(i=>{tmp.board[i]=2; tmp.which[i]=id;}); const dist=move.cells.reduce((s,i)=>{const[x,y]=cellXY(i); return s+Math.abs(x-4.5)+Math.abs(y-4.5);},0)/move.cells.length; return 40-dist; }
+ const beforeRem=remainingScore(state,side);
+ const beforeComponents=publicComponents(tmp,side);
+ const piece=tmp.pieces[side].find(p=>p.id===move.piece); const cells=legalPlacement(tmp,side,move.piece,move.r,move.a); if(!cells) return -1e9; const id=`${side}_${move.piece}_x`; cells.forEach(i=>{tmp.board[i]=side; tmp.which[i]=id;}); tmp.registry[id]={side,pieceId:move.piece,cells:[...cells],label:piece.label,name:piece.base}; piece.placed=true; const canClaim=tmp.turns[side]>0; tmp.turns[side]++; const outcome=resolveClaims(tmp, side, canClaim, beforeComponents); const afterTerr=tmp.territory.filter(v=>v===side).length, afterRem=remainingScore(tmp,side);
+ const dist=move.cells.reduce((s,i)=>{const[x,y]=cellXY(i); return s+Math.abs(x-4.5)+Math.abs(y-4.5);},0)/move.cells.length;
+ const border=move.cells.filter(i=>{const[x,y]=cellXY(i); return x===0||x===9||y===0||y===9;}).length;
+ return (beforeRem-afterRem)*6 + (afterTerr-beforeTerr)*4 + outcome.captured.length*22 + border*1.2 - dist*0.6 + Math.random()*0.3; }
+// Expert AI: bounded two-ply minimax. Original approved piece artwork and rules stay unchanged.
+// Selection uses a fast, broad geometric filter, then evaluates tactical captures,
+// actual territory claims and the strongest plausible reply by simulation.
+const EXPERT_NEIGHBORS=Array.from({length:100},(_,i)=>{
+ const x=i%10,y=(i/10)|0,ns=[];
+ if(x>0)ns.push(i-1);if(x<9)ns.push(i+1);
+ if(y>0)ns.push(i-10);if(y<9)ns.push(i+10);
+ return ns;
+});
+function expertCopy(state){
+ return {
+  board:state.board.slice(),which:state.which.slice(),territory:state.territory.slice(),
+  registry:{...state.registry},
+  pieces:{1:state.pieces[1].map(p=>({...p})), '-1':state.pieces[-1].map(p=>({...p}))},
+  turns:{1:state.turns[1],'-1':state.turns[-1]},
+  variant:state.variant,cathedralPlaced:state.cathedralPlaced
+ };
+}
+function expertSimulate(state,side,move){
+ const next=expertCopy(state),beforeComponents=publicComponents(state,side),piece=next.pieces[side].find(p=>p.id===move.piece);
+ if(!piece||piece.placed)return null;
+ const cells=legalPlacement(next,side,move.piece,move.r,move.a);
+ if(!cells)return null;
+ const id='e_'+side+'_'+move.piece+'_'+move.a+'_'+move.r;
+ for(const i of cells){next.board[i]=side;next.which[i]=id;}
+ next.registry[id]={side,pieceId:move.piece,cells,name:piece.base,label:piece.label};
+ piece.placed=true;
+ const canClaim=next.turns[side]>0;
+ next.turns[side]++;
+ const outcome=resolveClaims(next,side,canClaim,beforeComponents);
+ return {state:next,outcome};
+}
+function expertQuickScore(state,side,move){
+ let score=move.cells.length*8.8,ownLinks=0,oppLinks=0,edge=0,nearCathedral=0;
+ const group=new Set(move.cells);
+ for(const i of move.cells){
+  const x=i%10,y=(i/10)|0;
+  if(x===0||x===9||y===0||y===9)edge++;
+  for(const j of EXPERT_NEIGHBORS[i]){
+   if(group.has(j))continue;
+   if(state.board[j]===side||state.territory[j]===side)ownLinks++;
+   else if(state.board[j]===-side||state.territory[j]===-side)oppLinks++;
+   else if(state.board[j]===2)nearCathedral++;
+  }
+ }
+ // Walls and connections matter: a lone centre piece is less useful for enclosure.
+ score+=edge*2.0+Math.min(ownLinks,7)*2.65+Math.min(oppLinks,5)*1.0;
+ if(ownLinks>1)score+=3.5;
+ if(ownLinks>3)score+=4.0;
+ score-=nearCathedral*0.8;
+ const avgDist=move.cells.reduce((z,i)=>z+Math.abs((i%10)-4.5)+Math.abs(((i/10)|0)-4.5),0)/move.cells.length;
+ score-=avgDist*0.35;
+ return score;
+}
+function expertCandidates(state,side,maxCount){
+ const scored=[], seen=new Set();
+ // 10,000 exceeds the complete maximum possible inventory search space.
+ for(const m of allMoves(state,side,10000)){
+  const pc=state.pieces[side].find(p=>p.id===m.piece);
+  const key=pc.base+'|'+m.cells.join(',');
+  if(seen.has(key))continue;seen.add(key);
+  scored.push({m,score:expertQuickScore(state,side,m),base:pc.base});
+ }
+ scored.sort((a,b)=>b.score-a.score);
+ if(scored.length<=maxCount)return scored.map(v=>v.m);
+ // Reserve candidates from each building family, so big connected shapes aren't
+ // suppressed by many placements of the same small piece.
+ const chosen=[],keys=new Set();
+ const add=x=>{const k=x.base+'|'+x.m.cells.join(',');if(!keys.has(k)){keys.add(k);chosen.push(x.m);}};
+ const broad=Math.max(1,maxCount-14);
+ for(const x of scored.slice(0,broad))add(x);
+ const countPerBase=new Map();
+ for(const x of scored){
+  if(chosen.length>=maxCount)break;
+  const count=countPerBase.get(x.base)||0;
+  if(count<2){add(x);countPerBase.set(x.base,count+1);}
+ }
+ for(const x of scored){if(chosen.length>=maxCount)break;add(x);}
+ return chosen.slice(0,maxCount);
+}
+function expertPositionScore(state,perspective){
+ const opposite=-perspective;
+ const ownRemaining=remainingScore(state,perspective);
+ const oppRemaining=remainingScore(state,opposite);
+ let ownClaims=0,oppClaims=0,ownFrontier=0,oppFrontier=0;
+ for(let i=0;i<100;i++){
+  const terr=state.territory[i];
+  if(terr===perspective)ownClaims++;
+  if(terr===opposite)oppClaims++;
+  if(state.board[i]!==0||terr!==0)continue;
+  let own=0,opp=0;
+  for(const j of EXPERT_NEIGHBORS[i]){
+   if(state.board[j]===perspective||state.territory[j]===perspective)own++;
+   if(state.board[j]===opposite||state.territory[j]===opposite)opp++;
+  }
+  if(own>1&&opp===0)ownFrontier++;
+  if(opp>1&&own===0)oppFrontier++;
+ }
+ // The victory condition is unplaced squares. Enclosures and captures swing that.
+ return (oppRemaining-ownRemaining)*9.0 +(ownClaims-oppClaims)*5.3
+  +(ownFrontier-oppFrontier)*0.65;
+}
+function expertScoreMove(state,side,move){
+ const sim=expertSimulate(state,side,move);if(!sim)return null;
+ const score=expertPositionScore(sim.state,side)
+    +Math.min(8,expertQuickScore(state,side,move))*0.2
+    +sim.outcome.captured.length*12;
+ return {move,sim,score};
+}
+function chooseExpertMove(state,side){
+ const initial=expertCandidates(state,side,90);
+ if(!initial.length)return null;
+ const evaluated=[];
+ for(const m of initial){const v=expertScoreMove(state,side,m);if(v)evaluated.push(v);}
+ evaluated.sort((a,b)=>b.score-a.score);
+ const root=evaluated.slice(0,Math.min(12,evaluated.length));
+ if(!root.length)return null;
+ let best=null,bestScore=-Infinity;
+ // Look for the strongest opposition to every promising candidate, then
+ // select the move that is still good in its worst tested continuation.
+ for(const candidate of root){
+  let worst=Infinity;
+  const replies=expertCandidates(candidate.sim.state,-side,48);
+  if(!replies.length){
+   worst=candidate.score+25; // If an opponent cannot move, that's an advantage.
+  }else{
+   for(const m of replies){
+    const reply=expertSimulate(candidate.sim.state,-side,m);
+    if(!reply)continue;
+    const value=expertPositionScore(reply.state,side)
+      -reply.outcome.captured.length*12
+      -expertQuickScore(candidate.sim.state,-side,m)*0.09;
+    if(value<worst)worst=value;
+   }
+  }
+  if(worst===Infinity)worst=candidate.score;
+  const score=worst*0.74+candidate.score*0.26;
+  if(score>bestScore){bestScore=score;best=candidate.move;}
+ }
+ return best||root[0].move;
+}
+// Master: selective three-ply minimax with capture-aware leaf search.
+// A beam search keeps this playable on a phone; all simulated placements run through
+// the same resolveClaims() code as live gameplay.
+function masterRanked(state,side,count){
+ const options=expertCandidates(state,side,Math.max(count*5,32));
+ const scored=[];
+ for(const move of options){
+  const r=expertScoreMove(state,side,move);
+  if(r)scored.push(r);
+ }
+ scored.sort((a,b)=>b.score-a.score);
+ return scored.slice(0,count);
+}
+function chooseMasterMove(state,side){
+ const roots=masterRanked(state,side,9);
+ if(!roots.length)return null;
+ let choice=roots[0].move,best=-Infinity;
+ for(const root of roots){
+  const replies=masterRanked(root.sim.state,-side,10);
+  if(!replies.length){
+   const value=root.score+38;
+   if(value>best){best=value;choice=root.move;}
+   continue;
+  }
+  let worst=Infinity;
+  for(const reply of replies){
+   // We deliberately search our next move; Expert stops at this opponent response.
+   const responses=masterRanked(reply.sim.state,side,6);
+   let answer;
+   if(!responses.length){
+    answer=expertPositionScore(reply.sim.state,side)-28;
+   }else{
+    answer=-Infinity;
+    for(const continuation of responses){
+     const value=expertPositionScore(continuation.sim.state,side)
+      +continuation.sim.outcome.captured.length*10;
+     if(value>answer)answer=value;
+    }
+   }
+   // The opponent's reply is not allowed to be ignored just because our
+   // following move was promising. Keep a weight on the immediate threat.
+   const now=expertPositionScore(reply.sim.state,side);
+   const value=answer*0.72+now*0.28;
+   if(value<worst)worst=value;
+   // Safe alpha-beta-like cutoff: a root that is already worse than the
+   // leading move need not be explored further when the bound is decisive.
+   if(worst<best-120)break;
+  }
+  const value=worst*0.81+root.score*0.19;
+  if(value>best){best=value;choice=root.move;}
+ }
+ return choice;
+}
+
+function chooseGrandmasterMove(state,side){
+ const roots=masterRanked(state,side,11);
+ if(!roots.length)return null;
+ let choice=roots[0].move,best=-Infinity;
+ for(const root of roots){
+  const replies=masterRanked(root.sim.state,-side,11);
+  if(!replies.length){
+   const value=root.score+44;
+   if(value>best){best=value;choice=root.move;}
+   continue;
+  }
+  let worstReply=Infinity;
+  for(const reply of replies){
+   const responses=masterRanked(reply.sim.state,side,8);
+   let ourBest;
+   if(!responses.length){
+    ourBest=expertPositionScore(reply.sim.state,side)-36;
+   }else{
+    ourBest=-Infinity;
+    for(const response of responses){
+     const opp2=masterRanked(response.sim.state,-side,5);
+     let oppBest;
+     if(!opp2.length){
+      oppBest=expertPositionScore(response.sim.state,side)+30+response.sim.outcome.captured.length*10;
+     }else{
+      oppBest=Infinity;
+      for(const counter of opp2){
+       const now=expertPositionScore(counter.sim.state,side)
+        -counter.sim.outcome.captured.length*11;
+       if(now<oppBest)oppBest=now;
+      }
+     }
+     const immediate=expertPositionScore(response.sim.state,side)
+      +response.sim.outcome.captured.length*10;
+     const value=oppBest*0.76+immediate*0.24;
+     if(value>ourBest)ourBest=value;
+    }
+   }
+   const danger=expertPositionScore(reply.sim.state,side)-reply.sim.outcome.captured.length*10;
+   const replyValue=ourBest*0.78+danger*0.22;
+   if(replyValue<worstReply)worstReply=replyValue;
+   if(worstReply<best-135)break;
+  }
+  const rootValue=worstReply*0.83+root.score*0.17;
+  if(rootValue>best){best=rootValue;choice=root.move;}
+ }
+ return choice;
+}
+function legalMovesForCurrent(){ if(g.expect==='cathedral') return cathedralMoves(g); return allMoves(g, g.turn); }
+function allowedAI(){ return g.mode==='ai' && g.status==='playing' && g.turn!==0 && g.turn!==g.human; }
+function nextAI(){ if(clock) clearTimeout(clock); if(!allowedAI()) return;
+ const delay=(g.difficulty==='master'?360:g.difficulty==='expert'?290:g.difficulty==='normal'?250:g.difficulty==='easy'?220:160);
+ clock=setTimeout(()=>{ if(!allowedAI()) return; if(g.expect==='cathedral'){ const moves=cathedralMoves(g).filter(m=>m.r===0); if(!moves.length) return; let pick=moves[Math.floor(Math.random()*moves.length)]; if(g.difficulty!=='noob'){ pick=[...moves].sort((a,b)=>evaluateMove(g,0,b)-evaluateMove(g,0,a))[0]; } applyMove(0,0,pick.r,pick.a); return; }
+   const moves=allMoves(g,g.turn); if(!moves.length){ pass(true); return; }
+   let pick;
+   if(g.difficulty==='master'){
+     pick=chooseGrandmasterMove(g,g.turn)||chooseMasterMove(g,g.turn)||chooseExpertMove(g,g.turn)||moves[0];
+   }else if(g.difficulty==='expert'){
+     pick=chooseMasterMove(g,g.turn)||chooseExpertMove(g,g.turn)||moves[0];
+   }else if(g.difficulty==='normal'){
+     pick=chooseExpertMove(g,g.turn)||moves[0];
+   }else if(g.difficulty==='noob'){
+     pick=moves[Math.floor(Math.random()*moves.length)];
+   }else{
+     const ranked=moves.map(m=>({m,v:evaluateMove(g,g.turn,m)})).sort((a,b)=>b.v-a.v);
+     const pool=ranked.slice(0,18).map(x=>x.m);
+     pick=pool[Math.floor(Math.random()*Math.min(pool.length,5))];
+   }
+   applyMove(g.turn,pick.piece,pick.r,pick.a);
+ },delay);
+}
+function continueTurns(){
+ if(autoPassTimer) clearTimeout(autoPassTimer);
+ // For AI turns, keep the existing AI logic (it passes if it has no moves).
+ if(allowedAI()){nextAI();return;}
+ if(g.status!=='playing' || g.expect!=='building' || !g.autoPassEnabled) return;
+ if(!g.autoPassArmed?.[String(g.turn)]) return;
+ const expectedSide=g.turn;
+ autoPassTimer=setTimeout(()=>{
+  autoPassTimer=null;
+  if(g.status!=='playing' || g.expect!=='building' || g.turn!==expectedSide || !g.autoPassEnabled) return;
+  if(!g.autoPassArmed?.[String(expectedSide)] || allowedAI()) return;
+  if(!allMoves(g,expectedSide,1).length) pass(true);
+ },260);
+}
+function announceWinner(){
+ // Scroll only after the winner is written into the visible status heading.
+ requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'smooth'}));
+}
+function start(){ if(clock) clearTimeout(clock); if(autoPassTimer) clearTimeout(autoPassTimer); const human=+$('side').value, variant=$('variant').value; g={
+   board:Array(100).fill(0), which:Array(100).fill(null), territory:Array(100).fill(0), registry:{}, pieces:mkPieces(),
+   turn:(variant==='standard'?1:-1), expect:(variant==='standard'?'cathedral':'building'), selected:{1:0,'-1':0}, rot:0, snap:[], history:[], last:[],
+   mode:$('mode').value, human, difficulty:$('difficulty').value, variant, autoPassEnabled:$('autoPassEnabled').checked, autoPassArmed:{'1':false,'-1':false}, status:'playing', passes:0, move:0, turns:{1:0,'-1':0}, notice:'', cathedralPlaced:false,
+   justMoved:null
+ };
+ $('showset').value='player'; hover=-1; chooseNextSelected(1); chooseNextSelected(-1);
+ g.notice = variant==='standard' ? 'Place the neutral Cathedral first. Then Dark makes the first building move.' : 'Tom Lehman variant: Dark places the first building. Light then places the Cathedral and its first building.';
+ render(); nextAI(); }
+function pass(auto=false){
+ if(g.status!=='playing' || g.expect!=='building') return;
+ const moves=allMoves(g,g.turn,1);
+ if(moves.length){
+  if(!auto){g.notice='You still have a legal placement available.';render();}
+  return;
+ }
+ snapshot();
+ if(!auto && g.autoPassEnabled){
+  if(!g.autoPassArmed) g.autoPassArmed={'1':false,'-1':false};
+  g.autoPassArmed[String(g.turn)]=true;
+ }
+ g.history.push(`${g.history.length+1}. ${SIDE_NAME[g.turn]} passes`);
+ g.passes++;
+ if(g.passes>=2){
+  g.status='done';
+  const a=remainingScore(g,1), b=remainingScore(g,-1);
+  g.notice=a===b ? `Draw — both players have ${a} unplaced squares.` : `${a<b?'Light':'Dark'} wins, ${Math.min(a,b)} vs ${Math.max(a,b)} unplaced squares.`;
+  render();
+  announceWinner();
+  return;
+ }
+ g.turn=-g.turn;
+ g.notice='No legal building was available for that player.';
+ chooseNextSelected(g.turn);syncTurnPieceDisplay();render();continueTurns();
+}
+function renderPieces(){ const side=currentViewerSide(); const box=$('pieces'); const passButton=$('skip'); box.innerHTML=''; $('whose').textContent=`· ${SIDE_NAME[side]}`; const pcs=[...g.pieces[side]]; const activeSelectable=(g.status==='playing' && g.expect==='building' && side===g.turn && !allowedAI());
+ // Gallery order only; this does not change move rules, piece IDs, or game data.
+ // Descending footprint size: the two 1x1 Taverns occupy the compact last row.
+ const galleryOrder={Academy:0,Castle:1,Tower:2,Infirmary:3,Manor:4,Square:5,Abbey:6,Bridge:7,Inn:8,Stable:9,Tavern:10};
+ pcs.sort((a,b)=>(galleryOrder[a.base]??20)-(galleryOrder[b.base]??20));
+ pcs.forEach(pc=>{ const btn=document.createElement('button'); btn.title=pc.label+(pc.placed?' · already placed':''); btn.className='piece'+(pc.base==='Tavern'?' tavern-thumb':'')+((g.selected[side]===pc.id && side===g.turn)?' selected':'')+(!activeSelectable?' viewonly':''); btn.disabled=(activeSelectable?pc.placed:false);
+   const sprite=getPhoto(side, pc.base, 0); let visual; if(sprite){ const wrap=document.createElement('div'); wrap.className='pieceThumbWrap'; const img=document.createElement('img'); img.className='pieceThumb'; img.alt=pc.label; img.src=sprite; wrap.append(img); visual=wrap; } else { const mini=document.createElement('div'); mini.className='shape'; const filled=new Set(normalize(pc.cells).map(([x,y])=>y*5+x)); for(let i=0;i<25;i++){ const sq=document.createElement('i'); if(filled.has(i)) sq.className=`filled ${side===1?'light':'dark'}`; mini.append(sq); } visual=mini; }
+   const text=document.createElement('div'); text.className='pieceName'; text.textContent=pc.label;
+   btn.append(visual,text);
+   if(activeSelectable && !pc.placed){ btn.onclick=()=>{ g.selected[side]=pc.id; g.rot=0; render(); }; } else { btn.onclick=e=>e.preventDefault(); }
+   box.append(btn);
+ });
+ // The compact bottom row contains Tavern 1, Tavern 2, then Pass.
+ box.append(passButton);
+}
+
+$('shownames').addEventListener('change',()=>{
+ const box=document.querySelector('.board-buildings');
+ if(box)box.classList.toggle('show-names',$('shownames').checked);
+});
+
+function coordBounding(cells){const xs=cells.map(i=>i%10),ys=cells.map(i=>Math.floor(i/10));const x=Math.min(...xs),y=Math.min(...ys);return{x,y,w:Math.max(...xs)-x+1,h:Math.max(...ys)-y+1};}
+function photographicOrientation(obj){
+ const piece=obj.side===0?CATHEDRAL:g.pieces[obj.side]?.find(p=>p.id===obj.pieceId);
+ if(!piece)return 0;
+ const coords=obj.cells.map(i=>[i%10,Math.floor(i/10)]);
+ const minx=Math.min(...coords.map(c=>c[0])),miny=Math.min(...coords.map(c=>c[1]));
+ const shape=new Set(coords.map(([x,y])=>(x-minx)+','+(y-miny)));
+ for(const o of orientations(piece)){if(o.cells.length===shape.size&&o.cells.every(([x,y])=>shape.has(x+','+y)))return o.r;}
+ return 0;
+}
+function putPhoto(layer,photo,cells,extra=''){
+ if(!photo||!cells||!cells.length)return null;
+ const box=coordBounding(cells),img=document.createElement('img');
+ img.className='photoSprite '+extra;img.src=photo;img.draggable=false;
+ img.style.left=(box.x*10)+'%';img.style.top=(box.y*10)+'%';img.style.width=(box.w*10)+'%';img.style.height=(box.h*10)+'%';
+ layer.append(img);return img;
+}
+function renderBoardPhotos(){
+ const board=$('board'); board.classList.add('photoEdition');
+ const layer=document.createElement('div');layer.className='photoLayer';layer.id='photoLayer';
+ for(const [id,obj] of Object.entries(g.registry)){
+  if(!obj||!obj.cells?.length)continue;
+  const photo=getPhoto(obj.side,obj.name,photographicOrientation(obj));
+  const latest=obj.cells.some(i=>g.last.includes(i));
+  putPhoto(layer,photo,obj.cells,latest?'lastPlaced':'');
+ }
+ // Highlight only the exposed perimeter of the most recently placed building.
+ // The 10x10 grid is expressed in percentage coordinates on an SVG viewBox.
+ if(g.last?.length){
+  const occupied=new Set(g.last);
+  const edges=[];
+  for(const cell of occupied){
+   const x=cell%10,y=Math.floor(cell/10),px=x*10,py=y*10;
+   if(y===0||!occupied.has(cell-10))edges.push(`M${px} ${py}L${px+10} ${py}`);
+   if(x===9||!occupied.has(cell+1))edges.push(`M${px+10} ${py}L${px+10} ${py+10}`);
+   if(y===9||!occupied.has(cell+10))edges.push(`M${px+10} ${py+10}L${px} ${py+10}`);
+   if(x===0||!occupied.has(cell-1))edges.push(`M${px} ${py+10}L${px} ${py}`);
+  }
+  const ns='http://www.w3.org/2000/svg';
+  const outline=document.createElementNS(ns,'svg');
+  outline.setAttribute('class','lastPieceOutline');outline.setAttribute('viewBox','0 0 100 100');
+  outline.setAttribute('preserveAspectRatio','none');outline.setAttribute('aria-hidden','true');
+  const d=edges.join(' ');
+  const glow=document.createElementNS(ns,'path');glow.setAttribute('d',d);glow.setAttribute('class','outlineGlow');
+  const core=document.createElementNS(ns,'path');core.setAttribute('d',d);core.setAttribute('class','outlineCore');
+  outline.append(glow,core);layer.append(outline);
+ }
+ board.append(layer);renderPhotoPreview();
+}
+function renderPhotoPreview(){
+ const layer=$('photoLayer');if(!layer)return;
+ layer.querySelector('.photoGhost')?.remove();
+ if(g.status!=='playing'||allowedAI()||hover<0)return;
+ const side=g.expect==='cathedral'?0:g.turn;
+ const piece=currentPiece(),pid=g.expect==='cathedral'?0:g.selected[g.turn];
+ if(!piece)return;
+ const cells=legalPlacement(g,side,pid,g.rot,hover);
+ if(!cells)return;
+ const orient=orientations(piece)[g.rot];if(!orient)return;
+ putPhoto(layer,getPhoto(side,piece.base,orient.r),cells,'photoGhost');
+}
+function render(){ const board=$('board'); board.innerHTML=''; const side=actorSide(); const piece=currentPiece(); const currentPieceId=(g.expect==='building'?g.selected[side]:0);
+ const preview=(hover>=0 && g.status==='playing' && !allowedAI() && piece) ? legalPlacement(g, g.expect==='cathedral'?0:side, currentPieceId, g.rot, hover) : null;
+ const test=(hover>=0 && piece)?cellsFor(piece, hover, g.rot):null;
+ for(let i=0;i<100;i++){
+   const el=document.createElement('button'); el.className='cell'+(((Math.floor(i/10)+i)%2)?' alt':''); if(g.territory[i]) el.classList.add(`territory${g.territory[i]}`); if(preview?.includes(i)) el.classList.add('preview'); else if(!preview && test?.includes(i)) el.classList.add('invalid'); if(g.last.includes(i)) el.classList.add('last');
+   const sideOcc=g.board[i]; if(sideOcc){ if(sideOcc===2){ const face=document.createElement('span'); face.className='stoneFace'; el.append(face); } else { const face=document.createElement('span'); face.className='pieceFace '+(sideOcc===1?'light':'dark'); el.append(face); }
+     const sym=document.createElement('span'); sym.className='symbol'+(sideOcc===2?' neutral':''); if(sideOcc===2){ sym.textContent='✝'; el.append(sym); }
+   }
+   el.title=cellName(i); el.onmouseenter=()=>{hover=i; updateHover();}; el.onfocus=()=>{hover=i; updateHover();}; el.onclick=(ev)=>{ if(g.status!=='playing'||allowedAI())return; hover=i; updateHover(); if(lastPointerType==='mouse' && ev.button===0 && Date.now()>suppressClickDropUntil){ tryDrop(); } };
+   board.append(el);
+ }
+ renderBoardPhotos();
+ let stat='', sub='';
+ if(g.status==='done'){
+   stat=g.notice || 'Game complete';
+   sub='';
+ } else if(g.expect==='cathedral'){
+   stat='Place the Cathedral';
+   sub='';
+ } else {
+   stat=`${SIDE_NAME[g.turn]} to play${allowedAI()?' · AI':''}`;
+   sub='';
+ }
+ const statusWrap=document.querySelector('.status');
+ if(statusWrap) statusWrap.classList.toggle('game-over', g.status==='done');
+ $('status').textContent=stat; $('subtitle').textContent=sub; $('notice').textContent=g.notice; $('score1').textContent=remainingScore(g,1); $('score2').textContent=remainingScore(g,-1); $('history').innerHTML=g.history.length?g.history.slice().reverse().map(h=>`<div>${h}</div>`).join(''):'No moves yet.';
+ $('undo').disabled=!g.snap.length; $('hint').disabled=g.status!=='playing'||allowedAI(); $('skip').disabled=g.status!=='playing'||g.expect!=='building'||allowedAI(); $('side').disabled=$('mode').value==='human'; renderPieces(); updateDrop(); save(); }
+function updateDrop(){const available=g?.status==='playing'&&!allowedAI()&&hover>=0;const side=g?.expect==='cathedral'?0:g?.turn;const pid=side===0?0:g?.selected[side];$('drop').disabled=!available||!legalPlacement(g,side,pid,g.rot,hover);}
+function updateHover(){ const piece=currentPiece(); const side=(g.expect==='cathedral'?0:g.turn), pid=(g.expect==='cathedral'?0:g.selected[g.turn]); const preview=(hover>=0 && piece && !allowedAI())?legalPlacement(g,side,pid,g.rot,hover):null; const test=(hover>=0&&piece)?cellsFor(piece,hover,g.rot):null; [...$('board').children].forEach((e,i)=>{ e.classList.toggle('preview',!!preview?.includes(i)); e.classList.toggle('invalid',!preview&&!!test?.includes(i)); }); renderPhotoPreview(); updateDrop(); }
+function tryDrop(){ if(g.status!=='playing'||allowedAI()||hover<0)return false; const side=g.expect==='cathedral'?0:g.turn; const id=side===0?0:g.selected[side]; if(legalPlacement(g,side,id,g.rot,hover)){ suppressClickDropUntil=Date.now()+120; applyMove(side,id,g.rot,hover); hover=-1; updateHover(); return true; } return false; }
+$('drop').onclick=()=>{tryDrop();};
+$('rot').onclick=()=>{ if(g.status!=='playing'||allowedAI()) return; g.rot=(g.rot+1)%4; updateHover(); save(); };
+window.addEventListener('keydown',e=>{ if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)) return; const k=e.key.toLowerCase(); if(k==='r'){ e.preventDefault(); $('rot').click(); } else if(k==='d' || e.key==='Enter' || e.key===' '){ e.preventDefault(); $('drop').click(); } });
+let dragging=false,lastPointerType='mouse';
+const boardEl=$('board');
+function movePointer(e){const rect=boardEl.getBoundingClientRect();const style=getComputedStyle(boardEl);const pl=parseFloat(style.paddingLeft)||0,pt=parseFloat(style.paddingTop)||0,pr=parseFloat(style.paddingRight)||0,pb=parseFloat(style.paddingBottom)||0;const x=e.clientX-rect.left-pl,y=e.clientY-rect.top-pt;const w=rect.width-pl-pr,h=rect.height-pt-pb;if(x<0||y<0||x>=w||y>=h)return;const col=Math.min(9,Math.floor(x/w*10)),row=Math.min(9,Math.floor(y/h*10));const next=row*10+col;if(next!==hover){hover=next;updateHover();}}
+boardEl.addEventListener('contextmenu',e=>{if(g.status!=='playing'||allowedAI())return; lastPointerType='mouse'; e.preventDefault(); $('rot').click();});
+boardEl.addEventListener('pointerdown',e=>{if(g.status!=='playing'||allowedAI())return; lastPointerType=e.pointerType||'mouse'; dragging=true; boardEl.setPointerCapture(e.pointerId); movePointer(e); e.preventDefault()});
+boardEl.addEventListener('pointermove',e=>{if(!dragging)return; movePointer(e); e.preventDefault()});
+boardEl.addEventListener('pointerup',e=>{ if(!dragging) return; movePointer(e); dragging=false; if((e.pointerType||lastPointerType)==='mouse' && e.button===0){ suppressClickDropUntil=Date.now()+120; tryDrop(); } e.preventDefault(); });
+boardEl.addEventListener('pointercancel',()=>{dragging=false});
+$('new').onclick=start; $('skip').onclick=()=>pass(); $('undo').onclick=()=>{ if(clock) clearTimeout(clock); if(autoPassTimer) clearTimeout(autoPassTimer); if(!g.snap.length) return; const prev=JSON.parse(g.snap.pop()); const rest=g.snap; g=prev; g.snap=rest; if(g.mode==='ai' && allowedAI() && g.snap.length){ const older=JSON.parse(g.snap.pop()); g=older; g.snap=rest; } render(); continueTurns(); };
+$('hint').onclick=()=>{ if(g.status!=='playing') return; if(g.expect==='cathedral'){ const ms=cathedralMoves(g); if(!ms.length){ g.notice='No legal Cathedral placement available.'; render(); return; } const best=[...ms].sort((a,b)=>evaluateMove(g,0,b)-evaluateMove(g,0,a))[0]; g.rot=best.r; hover=best.a; render(); g.notice=`Suggested Cathedral placement: ${cellName(best.a)}.`; $('notice').textContent=g.notice; return; }
+  const ms=allMoves(g,g.turn); if(!ms.length){ g.notice='No legal move available.'; render(); return; } const ranked=ms.map(m=>({m,v:evaluateMove(g,g.turn,m)})).sort((a,b)=>b.v-a.v); const best=ranked[0].m; g.selected[g.turn]=best.piece; if(currentViewerSide()!==g.turn) $('showset').value=(g.turn===1?'light':'dark'); g.rot=best.r; hover=best.a; render(); g.notice=`Suggested placement: ${g.pieces[g.turn].find(p=>p.id===best.piece).label} at ${cellName(best.a)}. This is a heuristic suggestion, not a solved move.`; $('notice').textContent=g.notice; };
+$('autoPassEnabled').addEventListener('change',()=>{
+ if(!g) return;
+ g.autoPassEnabled=$('autoPassEnabled').checked;
+ save();
+ if(g.autoPassEnabled) continueTurns();
+ else if(autoPassTimer){clearTimeout(autoPassTimer);autoPassTimer=null;}
+});
+for(const id of ['mode','side','difficulty','variant','showset']) $(id).addEventListener('change',()=>{ if(id==='mode') $('side').disabled=$('mode').value==='human'; if(id==='showset' && g){ renderPieces(); return; } if(g){ g.notice='Setting changed. Choose Start new game to apply.'; $('notice').textContent=g.notice; } });
+try{ const data=JSON.parse(localStorage.getItem(STORAGE_KEY)); if(data && data.board?.length===100 && data.pieces && data.registry){ g=data; if(typeof g.autoPassEnabled!=='boolean')g.autoPassEnabled=true; if(!g.autoPassArmed)g.autoPassArmed={'1':false,'-1':false}; $('autoPassEnabled').checked=g.autoPassEnabled; $('mode').value=g.mode; $('side').value=String(g.human); $('difficulty').value=g.difficulty; $('variant').value=g.variant||'standard'; $('showset').value='player'; $('side').disabled=$('mode').value==='human'; render(); if(g.status==='done') announceWinner(); else continueTurns(); } else { start(); } }catch(e){ start(); }
+})();
+
+/* v33: board-top alignment after natural scrolling, never on initial load.
+   Scroll snap is deliberately narrow (40px), and it does not lock the page. */
+(()=>{
+  const target=document.getElementById('boardSnap');
+  if(!target)return;
+  let userGesture=false, autoAligning=false, idleTimer=0;
+  const arm=()=>{userGesture=true;};
+  window.addEventListener('touchstart',arm,{passive:true});
+  window.addEventListener('wheel',arm,{passive:true});
+  window.addEventListener('keydown',e=>{
+    if(['ArrowDown','ArrowUp','PageDown','PageUp',' ','Home','End'].includes(e.key))arm();
+  });
+  function maybeAlign(){
+    if(!userGesture || autoAligning)return;
+    const top=target.getBoundingClientRect().top;
+    if(Math.abs(top)>40 || window.scrollY<40)return;
+    autoAligning=true;
+    window.scrollTo({top:window.scrollY+top,behavior:'smooth'});
+    window.setTimeout(()=>{autoAligning=false;userGesture=false;},450);
+  }
+  if('onscrollend' in window){
+    window.addEventListener('scrollend',maybeAlign,{passive:true});
+  } else {
+    window.addEventListener('scroll',()=>{
+      if(!userGesture || autoAligning)return;
+      clearTimeout(idleTimer);
+      idleTimer=window.setTimeout(maybeAlign,175);
+    },{passive:true});
+  }
+})();
+</script>
+</body>
+</html>
