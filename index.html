@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<title>Cathedral Trainer v43 · Bottom Corner Cleanup 2</title>
+<title>Cathedral Trainer v50 · Online Multiplayer</title>
 <style>
 :root{
   --bg:#0f171a;--panel:#1b3034ee;--panelLine:#55727666;--text:#f6f0e5;--muted:#bdd0ce;
@@ -214,6 +214,16 @@ main{padding-top:20px}
 .board-buildings .pieces .gallery-pass:disabled{opacity:.42;cursor:not-allowed}
 .auto-pass-setting{display:flex;gap:9px;align-items:flex-start;margin-top:14px;color:#d7e2dc;font-size:13px;line-height:1.4;cursor:pointer}
 .auto-pass-setting input{flex:none;margin-top:2px;accent-color:#daba7d;width:18px;height:18px}
+
+/* v50 online rooms: non-invasive settings and connection indicators. */
+.online-field{display:none;margin:12px 0;padding:12px;border:1px solid #66837d;border-radius:11px;background:#20383c}
+.online-field.visible{display:block}
+.online-field input{width:100%;min-width:0;border:1px solid #66837d;border-radius:8px;background:#2e494c;color:#fff;padding:9px;font:inherit;text-transform:uppercase;letter-spacing:.15em}
+.online-buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:9px 0}
+.online-field .btn{min-width:0;font-size:12px}
+.online-message{font-size:12px;line-height:1.45;color:#e5d7b6;margin:6px 0}
+.online-roomline{font-size:14px;color:#f2d28f;font-weight:700;overflow-wrap:anywhere}
+.online-connection{font:11px system-ui,sans-serif;text-align:center;color:#edd8a4;min-height:14px;margin-bottom:5px}
 </style>
 </head>
 <body>
@@ -225,7 +235,7 @@ main{padding-top:20px}
 <div class="grid">
   <section class="panel">
     <div class="status"><h2 id="status">Place the Cathedral</h2><p id="subtitle">Select a legal placement on the board.</p></div>
-    <div class="board-frame" id="boardSnap"><div class="board" id="board" aria-label="Cathedral game board"></div><img class="frame-corner frame-corner-tl" alt="" aria-hidden="true" src="assets/art_006.png"><img class="frame-corner frame-corner-tr" alt="" aria-hidden="true" src="assets/art_007.png"><img class="frame-corner frame-corner-bl" alt="" aria-hidden="true" src="assets/art_006.png"><img class="frame-corner frame-corner-br" alt="" aria-hidden="true" src="assets/art_007.png"></div>
+    <div class="online-connection" id="onlineConnection"></div><div class="board-frame" id="boardSnap"><div class="board" id="board" aria-label="Cathedral game board"></div><img class="frame-corner frame-corner-tl" alt="" aria-hidden="true" src="assets/art_006.png"><img class="frame-corner frame-corner-tr" alt="" aria-hidden="true" src="assets/art_007.png"><img class="frame-corner frame-corner-bl" alt="" aria-hidden="true" src="assets/art_006.png"><img class="frame-corner frame-corner-br" alt="" aria-hidden="true" src="assets/art_007.png"></div>
     <div class="placement-toolbar"><button class="btn" id="rot"><span class="button-long">↻ Rotate (R / right-click)</span><span class="button-short">↻ Rotate</span></button><button class="btn primary" id="drop"><span class="button-long">↓ Drop piece (D / Enter)</span><span class="button-short">↓ Drop</span></button></div><div class="board-buildings"><div class="pieces" id="pieces"><button class="btn gallery-pass" id="skip" type="button">Pass</button></div><div class="building-header"><h3>Available buildings <span id="whose"></span></h3><label class="names-toggle" for="shownames"><input type="checkbox" id="shownames"> Show names</label><select id="showset" aria-label="Buildings to display"><option value="player" selected>My buildings</option><option value="opponent">Opponent's buildings</option><option value="light">Light buildings</option><option value="dark">Dark buildings</option></select></div></div>
     <div class="legend">
       <span><i class="swatch light"></i>Light</span>
@@ -243,8 +253,15 @@ main{padding-top:20px}
   <aside class="panel">
     <h2 style="font:23px Georgia,serif;margin:0">Game settings</h2>
     <div class="controls"><button class="btn primary" style="width:100%" id="new">Start new game</button></div>
-    <div class="field"><label for="mode">Opponent</label><select id="mode"><option value="ai">Against AI</option><option value="human">Two players · same device</option></select></div>
-    <div class="field"><label for="side">Your colour</label><select id="side"><option value="-1">Dark · first building move</option><option value="1">Light · second player</option></select></div>
+    <div class="field"><label for="mode">Opponent</label><select id="mode"><option value="ai">Against AI</option><option value="human">Two players · same device</option><option value="online">Two players · online rooms</option></select></div>
+    <section class="online-field" id="onlineField" aria-label="Online multiplayer">
+<div class="online-message">Play on separate devices. Create a room, then share its code or invitation link. Creator plays Dark, invited player Light.</div>
+<div class="online-buttons"><button class="btn primary" id="onlineCreate" type="button">Create room</button><button class="btn" id="onlineJoin" type="button">Join room</button></div>
+<label class="small" for="onlineCode">Room code</label><input id="onlineCode" maxlength="8" placeholder="XXXXXXXX" autocomplete="off" aria-label="Room code">
+<div id="onlineRoom" class="online-roomline"></div><div id="onlineMessage" class="online-message" role="status">Firebase setup required before online play.</div>
+<div class="online-buttons"><button class="btn" type="button" id="onlineCopy">Copy invite</button><button class="btn" type="button" id="onlineLeave">Leave room</button></div>
+</section>
+<div class="field"><label for="side">Your colour</label><select id="side"><option value="-1">Dark · first building move</option><option value="1">Light · second player</option></select></div>
     <div class="field"><label for="variant">Starting moves</label><select id="variant"><option value="standard" selected>Standard · Light places Cathedral first</option><option value="lehman">Tom Lehman variant</option></select></div>
     <div class="field"><label for="difficulty">AI strength</label><select id="difficulty"><option value="noob">Noob · random</option><option value="easy" selected>Beginner</option><option value="normal">Club player · tactical lookahead</option><option value="expert">Expert · deeper strategic search</option><option value="master">Master · deepest strategic search</option></select></div>
     <div class="menuSection">
@@ -341,7 +358,7 @@ function cellsFor(piece, anchor, rotIndex){ const orient=orientations(piece)[rot
 function legalPlacement(state, side, pieceId, rotIndex, anchor){ const piece=(side===0?CATHEDRAL:state.pieces[side].find(p=>p.id===pieceId)); if(!piece || (side!==0 && piece.placed)) return null; const cells=cellsFor(piece, anchor, rotIndex); if(!cells) return null; for(const i of cells){ if(state.board[i]!==0) return null; if(side!==0 && state.territory[i]!==0 && state.territory[i]!==side) return null; }
  return cells; }
 function snapshot(){ g.snap.push(JSON.stringify({...g,snap:[]})); if(g.snap.length>120) g.snap.shift(); }
-function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(g)); }catch(e){} }
+function save(){ if(g?.mode==='online')return;try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(g)); }catch(e){} }
 function remainingScore(state, side){ return state.pieces[side].filter(p=>!p.placed).reduce((sum,p)=>sum+p.cells.length,0); }
 // Diagonal gaps are traversable: two buildings touching only at a corner do not enclose territory.
 function publicComponents(state, owner){ const blocked=new Set(); for(let i=0;i<100;i++){ if(state.board[i]===owner || state.territory[i]===owner) blocked.add(i); }
@@ -460,7 +477,7 @@ function applyMove(side, pieceId, rotIndex, anchor){ if(g.status!=='playing') re
  g.justMoved=(side===0?g.turn:side); // in cathedral phase current player remains meaningful
  if(side===0 && g.variant==='lehman') g.justMoved=g.turn; // Light still to place a building
  g.notice=msg; if(side===0){ finishMove(msg); } else { finishMove(msg); }
- return true; }
+ onlineSubmit(); return true; }
 function allMoves(state, side, limit=4000){ const moves=[]; for(const p of state.pieces[side]){ if(p.placed) continue; const rots=orientations(p); for(let r=0;r<rots.length;r++) for(let a=0;a<100;a++){ const cells=legalPlacement(state, side, p.id, r, a); if(cells){ moves.push({piece:p.id,r,a,cells}); if(moves.length>=limit) return moves; } } } return moves; }
 function cathedralMoves(state, limit=500){ const rots=orientations(CATHEDRAL); const moves=[]; for(let r=0;r<rots.length;r++) for(let a=0;a<100;a++){ const cells=legalPlacement(state,0,0,r,a); if(cells){ moves.push({piece:0,r,a,cells}); if(moves.length>=limit) return moves; } } return moves; }
 function evaluateMove(state, side, move){ const beforeTerr=state.territory.filter(v=>v===side).length; const tmp=clone(state);
@@ -716,6 +733,12 @@ function chooseGrandmasterMove(state,side){
 }
 function legalMovesForCurrent(){ if(g.expect==='cathedral') return cathedralMoves(g); return allMoves(g, g.turn); }
 function allowedAI(){ return g.mode==='ai' && g.status==='playing' && g.turn!==0 && g.turn!==g.human; }
+ function onlineLocked(){return g?.mode==='online' && (!window.cathedralOnline?.ready() || g.turn!==g.human);}
+ function onlineSubmit(){if(g?.mode==='online') window.cathedralOnline?.submit();}
+ function onlineSafeState(){return {...clone(g),snap:[],mode:'online',autoPassEnabled:g.autoPassEnabled};}
+ function importOnlineState(state,seat){g={...clone(state),human:seat,mode:'online',snap:[]};$('mode').value='online';$('side').value=String(seat);$('variant').value=g.variant; $('difficulty').value=g.difficulty; $('autoPassEnabled').checked=!!g.autoPassEnabled; $('showset').value='player';$('onlineField').classList.add('visible');syncTurnPieceDisplay();render();continueTurns();}
+ function prepareOnlineGame(){ $('mode').value='online'; $('side').value='-1'; start(); g.snap=[]; render(); return onlineSafeState(); }
+ window.cathedralApp={prepareOnlineGame,importOnlineState,onlineSafeState,setOnlineInfo:(message,code)=>{$('onlineMessage').textContent=message;$('onlineRoom').textContent=code?'Room '+code:'';$('onlineConnection').textContent=message;$('onlineCode').value=code||$('onlineCode').value;},setOnlineReady:(value)=>{if(g?.mode==='online'){render();if(value)continueTurns();}}};
 function nextAI(){ if(clock) clearTimeout(clock); if(!allowedAI()) return;
  const delay=(g.difficulty==='master'?360:g.difficulty==='expert'?290:g.difficulty==='normal'?250:g.difficulty==='easy'?220:160);
  clock=setTimeout(()=>{ if(!allowedAI()) return; if(g.expect==='cathedral'){ const moves=cathedralMoves(g).filter(m=>m.r===0); if(!moves.length) return; let pick=moves[Math.floor(Math.random()*moves.length)]; if(g.difficulty!=='noob'){ pick=[...moves].sort((a,b)=>evaluateMove(g,0,b)-evaluateMove(g,0,a))[0]; } applyMove(0,0,pick.r,pick.a); return; }
@@ -741,13 +764,13 @@ function continueTurns(){
  if(autoPassTimer) clearTimeout(autoPassTimer);
  // For AI turns, keep the existing AI logic (it passes if it has no moves).
  if(allowedAI()){nextAI();return;}
- if(g.status!=='playing' || g.expect!=='building' || !g.autoPassEnabled) return;
+ if(g.status!=='playing' || g.expect!=='building' || !g.autoPassEnabled || onlineLocked()) return;
  if(!g.autoPassArmed?.[String(g.turn)]) return;
  const expectedSide=g.turn;
  autoPassTimer=setTimeout(()=>{
   autoPassTimer=null;
   if(g.status!=='playing' || g.expect!=='building' || g.turn!==expectedSide || !g.autoPassEnabled) return;
-  if(!g.autoPassArmed?.[String(expectedSide)] || allowedAI()) return;
+  if(!g.autoPassArmed?.[String(expectedSide)] || allowedAI() || onlineLocked()) return;
   if(!allMoves(g,expectedSide,1).length) pass(true);
  },260);
 }
@@ -788,9 +811,9 @@ function pass(auto=false){
  }
  g.turn=-g.turn;
  g.notice='No legal building was available for that player.';
- chooseNextSelected(g.turn);syncTurnPieceDisplay();render();continueTurns();
+ chooseNextSelected(g.turn);syncTurnPieceDisplay();render();continueTurns();onlineSubmit();
 }
-function renderPieces(){ const side=currentViewerSide(); const box=$('pieces'); const passButton=$('skip'); box.innerHTML=''; $('whose').textContent=`· ${SIDE_NAME[side]}`; const pcs=[...g.pieces[side]]; const activeSelectable=(g.status==='playing' && g.expect==='building' && side===g.turn && !allowedAI());
+function renderPieces(){ const side=currentViewerSide(); const box=$('pieces'); const passButton=$('skip'); box.innerHTML=''; $('whose').textContent=`· ${SIDE_NAME[side]}`; const pcs=[...g.pieces[side]]; const activeSelectable=(g.status==='playing' && g.expect==='building' && side===g.turn && !allowedAI() && !onlineLocked());
  // Gallery order only; this does not change move rules, piece IDs, or game data.
  // Descending footprint size: the two 1x1 Taverns occupy the compact last row.
  const galleryOrder={Academy:0,Castle:1,Tower:2,Infirmary:3,Manor:4,Square:5,Abbey:6,Bridge:7,Inn:8,Stable:9,Tavern:10};
@@ -863,7 +886,7 @@ function renderBoardPhotos(){
 function renderPhotoPreview(){
  const layer=$('photoLayer');if(!layer)return;
  layer.querySelector('.photoGhost')?.remove();
- if(g.status!=='playing'||allowedAI()||hover<0)return;
+ if(g.status!=='playing'||allowedAI()||onlineLocked()||hover<0)return;
  const side=g.expect==='cathedral'?0:g.turn;
  const piece=currentPiece(),pid=g.expect==='cathedral'?0:g.selected[g.turn];
  if(!piece)return;
@@ -873,14 +896,14 @@ function renderPhotoPreview(){
  putPhoto(layer,getPhoto(side,piece.base,orient.r),cells,'photoGhost');
 }
 function render(){ const board=$('board'); board.innerHTML=''; const side=actorSide(); const piece=currentPiece(); const currentPieceId=(g.expect==='building'?g.selected[side]:0);
- const preview=(hover>=0 && g.status==='playing' && !allowedAI() && piece) ? legalPlacement(g, g.expect==='cathedral'?0:side, currentPieceId, g.rot, hover) : null;
+ const preview=(hover>=0 && g.status==='playing' && !allowedAI() && !onlineLocked() && piece) ? legalPlacement(g, g.expect==='cathedral'?0:side, currentPieceId, g.rot, hover) : null;
  const test=(hover>=0 && piece)?cellsFor(piece, hover, g.rot):null;
  for(let i=0;i<100;i++){
    const el=document.createElement('button'); el.className='cell'+(((Math.floor(i/10)+i)%2)?' alt':''); if(g.territory[i]) el.classList.add(`territory${g.territory[i]}`); if(preview?.includes(i)) el.classList.add('preview'); else if(!preview && test?.includes(i)) el.classList.add('invalid'); if(g.last.includes(i)) el.classList.add('last');
    const sideOcc=g.board[i]; if(sideOcc){ if(sideOcc===2){ const face=document.createElement('span'); face.className='stoneFace'; el.append(face); } else { const face=document.createElement('span'); face.className='pieceFace '+(sideOcc===1?'light':'dark'); el.append(face); }
      const sym=document.createElement('span'); sym.className='symbol'+(sideOcc===2?' neutral':''); if(sideOcc===2){ sym.textContent='✝'; el.append(sym); }
    }
-   el.title=cellName(i); el.onmouseenter=()=>{hover=i; updateHover();}; el.onfocus=()=>{hover=i; updateHover();}; el.onclick=(ev)=>{ if(g.status!=='playing'||allowedAI())return; hover=i; updateHover(); if(lastPointerType==='mouse' && ev.button===0 && Date.now()>suppressClickDropUntil){ tryDrop(); } };
+   el.title=cellName(i); el.onmouseenter=()=>{hover=i; updateHover();}; el.onfocus=()=>{hover=i; updateHover();}; el.onclick=(ev)=>{ if(g.status!=='playing'||allowedAI()||onlineLocked())return; hover=i; updateHover(); if(lastPointerType==='mouse' && ev.button===0 && Date.now()>suppressClickDropUntil){ tryDrop(); } };
    board.append(el);
  }
  renderBoardPhotos();
@@ -898,23 +921,23 @@ function render(){ const board=$('board'); board.innerHTML=''; const side=actorS
  const statusWrap=document.querySelector('.status');
  if(statusWrap) statusWrap.classList.toggle('game-over', g.status==='done');
  $('status').textContent=stat; $('subtitle').textContent=sub; $('notice').textContent=g.notice; $('score1').textContent=remainingScore(g,1); $('score2').textContent=remainingScore(g,-1); $('history').innerHTML=g.history.length?g.history.slice().reverse().map(h=>`<div>${h}</div>`).join(''):'No moves yet.';
- $('undo').disabled=!g.snap.length; $('hint').disabled=g.status!=='playing'||allowedAI(); $('skip').disabled=g.status!=='playing'||g.expect!=='building'||allowedAI(); $('side').disabled=$('mode').value==='human'; renderPieces(); updateDrop(); save(); }
-function updateDrop(){const available=g?.status==='playing'&&!allowedAI()&&hover>=0;const side=g?.expect==='cathedral'?0:g?.turn;const pid=side===0?0:g?.selected[side];$('drop').disabled=!available||!legalPlacement(g,side,pid,g.rot,hover);}
+ $('undo').disabled=g.mode==='online'||!g.snap.length; $('hint').disabled=g.mode==='online'||g.status!=='playing'||allowedAI(); $('skip').disabled=g.status!=='playing'||g.expect!=='building'||allowedAI()||onlineLocked(); $('side').disabled=['human','online'].includes($('mode').value); renderPieces(); updateDrop(); save(); }
+function updateDrop(){const available=g?.status==='playing'&&!allowedAI()&&!onlineLocked()&&hover>=0;const side=g?.expect==='cathedral'?0:g?.turn;const pid=side===0?0:g?.selected[side];$('drop').disabled=!available||!legalPlacement(g,side,pid,g.rot,hover);}
 function updateHover(){ const piece=currentPiece(); const side=(g.expect==='cathedral'?0:g.turn), pid=(g.expect==='cathedral'?0:g.selected[g.turn]); const preview=(hover>=0 && piece && !allowedAI())?legalPlacement(g,side,pid,g.rot,hover):null; const test=(hover>=0&&piece)?cellsFor(piece,hover,g.rot):null; [...$('board').children].forEach((e,i)=>{ e.classList.toggle('preview',!!preview?.includes(i)); e.classList.toggle('invalid',!preview&&!!test?.includes(i)); }); renderPhotoPreview(); updateDrop(); }
-function tryDrop(){ if(g.status!=='playing'||allowedAI()||hover<0)return false; const side=g.expect==='cathedral'?0:g.turn; const id=side===0?0:g.selected[side]; if(legalPlacement(g,side,id,g.rot,hover)){ suppressClickDropUntil=Date.now()+120; applyMove(side,id,g.rot,hover); hover=-1; updateHover(); return true; } return false; }
+function tryDrop(){ if(g.status!=='playing'||allowedAI()||onlineLocked()||hover<0)return false; const side=g.expect==='cathedral'?0:g.turn; const id=side===0?0:g.selected[side]; if(legalPlacement(g,side,id,g.rot,hover)){ suppressClickDropUntil=Date.now()+120; applyMove(side,id,g.rot,hover); hover=-1; updateHover(); return true; } return false; }
 $('drop').onclick=()=>{tryDrop();};
-$('rot').onclick=()=>{ if(g.status!=='playing'||allowedAI()) return; g.rot=(g.rot+1)%4; updateHover(); save(); };
+$('rot').onclick=()=>{ if(g.status!=='playing'||allowedAI()||onlineLocked()) return; g.rot=(g.rot+1)%4; updateHover(); save(); };
 window.addEventListener('keydown',e=>{ if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)) return; const k=e.key.toLowerCase(); if(k==='r'){ e.preventDefault(); $('rot').click(); } else if(k==='d' || e.key==='Enter' || e.key===' '){ e.preventDefault(); $('drop').click(); } });
 let dragging=false,lastPointerType='mouse';
 const boardEl=$('board');
 function movePointer(e){const rect=boardEl.getBoundingClientRect();const style=getComputedStyle(boardEl);const pl=parseFloat(style.paddingLeft)||0,pt=parseFloat(style.paddingTop)||0,pr=parseFloat(style.paddingRight)||0,pb=parseFloat(style.paddingBottom)||0;const x=e.clientX-rect.left-pl,y=e.clientY-rect.top-pt;const w=rect.width-pl-pr,h=rect.height-pt-pb;if(x<0||y<0||x>=w||y>=h)return;const col=Math.min(9,Math.floor(x/w*10)),row=Math.min(9,Math.floor(y/h*10));const next=row*10+col;if(next!==hover){hover=next;updateHover();}}
-boardEl.addEventListener('contextmenu',e=>{if(g.status!=='playing'||allowedAI())return; lastPointerType='mouse'; e.preventDefault(); $('rot').click();});
-boardEl.addEventListener('pointerdown',e=>{if(g.status!=='playing'||allowedAI())return; lastPointerType=e.pointerType||'mouse'; dragging=true; boardEl.setPointerCapture(e.pointerId); movePointer(e); e.preventDefault()});
+boardEl.addEventListener('contextmenu',e=>{if(g.status!=='playing'||allowedAI()||onlineLocked())return; lastPointerType='mouse'; e.preventDefault(); $('rot').click();});
+boardEl.addEventListener('pointerdown',e=>{if(g.status!=='playing'||allowedAI()||onlineLocked())return; lastPointerType=e.pointerType||'mouse'; dragging=true; boardEl.setPointerCapture(e.pointerId); movePointer(e); e.preventDefault()});
 boardEl.addEventListener('pointermove',e=>{if(!dragging)return; movePointer(e); e.preventDefault()});
 boardEl.addEventListener('pointerup',e=>{ if(!dragging) return; movePointer(e); dragging=false; if((e.pointerType||lastPointerType)==='mouse' && e.button===0){ suppressClickDropUntil=Date.now()+120; tryDrop(); } e.preventDefault(); });
 boardEl.addEventListener('pointercancel',()=>{dragging=false});
-$('new').onclick=start; $('skip').onclick=()=>pass(); $('undo').onclick=()=>{ if(clock) clearTimeout(clock); if(autoPassTimer) clearTimeout(autoPassTimer); if(!g.snap.length) return; const prev=JSON.parse(g.snap.pop()); const rest=g.snap; g=prev; g.snap=rest; if(g.mode==='ai' && allowedAI() && g.snap.length){ const older=JSON.parse(g.snap.pop()); g=older; g.snap=rest; } render(); continueTurns(); };
-$('hint').onclick=()=>{ if(g.status!=='playing') return; if(g.expect==='cathedral'){ const ms=cathedralMoves(g); if(!ms.length){ g.notice='No legal Cathedral placement available.'; render(); return; } const best=[...ms].sort((a,b)=>evaluateMove(g,0,b)-evaluateMove(g,0,a))[0]; g.rot=best.r; hover=best.a; render(); g.notice=`Suggested Cathedral placement: ${cellName(best.a)}.`; $('notice').textContent=g.notice; return; }
+$('new').onclick=()=>{if(g?.mode==='online'&&window.cathedralOnline?.ready()){alert('Leave the online room before starting a new local game.');return;}start();}; $('skip').onclick=()=>pass(); $('undo').onclick=()=>{ if(g.mode==='online')return; if(clock) clearTimeout(clock); if(autoPassTimer) clearTimeout(autoPassTimer); if(!g.snap.length) return; const prev=JSON.parse(g.snap.pop()); const rest=g.snap; g=prev; g.snap=rest; if(g.mode==='ai' && allowedAI() && g.snap.length){ const older=JSON.parse(g.snap.pop()); g=older; g.snap=rest; } render(); continueTurns(); };
+$('hint').onclick=()=>{ if(g.status!=='playing'||g.mode==='online') return; if(g.expect==='cathedral'){ const ms=cathedralMoves(g); if(!ms.length){ g.notice='No legal Cathedral placement available.'; render(); return; } const best=[...ms].sort((a,b)=>evaluateMove(g,0,b)-evaluateMove(g,0,a))[0]; g.rot=best.r; hover=best.a; render(); g.notice=`Suggested Cathedral placement: ${cellName(best.a)}.`; $('notice').textContent=g.notice; return; }
   const ms=allMoves(g,g.turn); if(!ms.length){ g.notice='No legal move available.'; render(); return; } const ranked=ms.map(m=>({m,v:evaluateMove(g,g.turn,m)})).sort((a,b)=>b.v-a.v); const best=ranked[0].m; g.selected[g.turn]=best.piece; if(currentViewerSide()!==g.turn) $('showset').value=(g.turn===1?'light':'dark'); g.rot=best.r; hover=best.a; render(); g.notice=`Suggested placement: ${g.pieces[g.turn].find(p=>p.id===best.piece).label} at ${cellName(best.a)}. This is a heuristic suggestion, not a solved move.`; $('notice').textContent=g.notice; };
 $('autoPassEnabled').addEventListener('change',()=>{
  if(!g) return;
@@ -923,8 +946,8 @@ $('autoPassEnabled').addEventListener('change',()=>{
  if(g.autoPassEnabled) continueTurns();
  else if(autoPassTimer){clearTimeout(autoPassTimer);autoPassTimer=null;}
 });
-for(const id of ['mode','side','difficulty','variant','showset']) $(id).addEventListener('change',()=>{ if(id==='mode') $('side').disabled=$('mode').value==='human'; if(id==='showset' && g){ renderPieces(); return; } if(g){ g.notice='Setting changed. Choose Start new game to apply.'; $('notice').textContent=g.notice; } });
-try{ const data=JSON.parse(localStorage.getItem(STORAGE_KEY)); if(data && data.board?.length===100 && data.pieces && data.registry){ g=data; if(typeof g.autoPassEnabled!=='boolean')g.autoPassEnabled=true; if(!g.autoPassArmed)g.autoPassArmed={'1':false,'-1':false}; $('autoPassEnabled').checked=g.autoPassEnabled; $('mode').value=g.mode; $('side').value=String(g.human); $('difficulty').value=g.difficulty; $('variant').value=g.variant||'standard'; $('showset').value='player'; $('side').disabled=$('mode').value==='human'; render(); if(g.status==='done') announceWinner(); else continueTurns(); } else { start(); } }catch(e){ start(); }
+for(const id of ['mode','side','difficulty','variant','showset']) $(id).addEventListener('change',()=>{if(id==='mode') $('onlineField').classList.toggle('visible',$('mode').value==='online'); if(id==='mode') $('side').disabled=['human','online'].includes($('mode').value); if(id==='showset' && g){ renderPieces(); return; } if(g){ g.notice='Setting changed. Choose Start new game to apply.'; $('notice').textContent=g.notice; } });
+try{ const data=JSON.parse(localStorage.getItem(STORAGE_KEY)); if(data && data.mode!=='online' && data.board?.length===100 && data.pieces && data.registry){ g=data; if(typeof g.autoPassEnabled!=='boolean')g.autoPassEnabled=true; if(!g.autoPassArmed)g.autoPassArmed={'1':false,'-1':false}; $('autoPassEnabled').checked=g.autoPassEnabled; $('mode').value=g.mode; $('side').value=String(g.human); $('difficulty').value=g.difficulty; $('variant').value=g.variant||'standard'; $('showset').value='player'; $('side').disabled=['human','online'].includes($('mode').value); render(); if(g.status==='done') announceWinner(); else continueTurns(); } else { start(); } }catch(e){ start(); }
 })();
 
 /* v33: board-top alignment after natural scrolling, never on initial load.
@@ -961,5 +984,6 @@ try{ const data=JSON.parse(localStorage.getItem(STORAGE_KEY)); if(data && data.b
 <script>
 if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(console.warn)); }
 </script>
+<script type="module" src="./online.js"></script>
 </body>
 </html>
