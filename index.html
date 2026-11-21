@@ -982,8 +982,8 @@ try{ const data=JSON.parse(localStorage.getItem(STORAGE_KEY)); if(data && data.m
 })();
 </script>
 <script>
-if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=53", {updateViaCache:"none"}).catch(console.warn)); }
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=54", {updateViaCache:"none"}).catch(console.warn)); }
 </script>
-<script type="module" src="./online.js"></script>
+<script type="module" src="./online.js?v=54"></script>
 </body>
 </html>
