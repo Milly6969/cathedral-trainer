@@ -1,5 +1,5 @@
-const CACHE = 'cathedral-pwa-v55';
-const CORE = ['./', './index.html', './manifest.webmanifest?v=53', './icons/cathedral-v52-192.png?v=53', './icons/cathedral-v52-512.png?v=53', './online.js?v=54', './firebase-config.js'];
+const CACHE = 'cathedral-pwa-v56';
+const CORE = ['./', './index.html', './manifest.webmanifest?v=53', './icons/cathedral-v52-192.png?v=53', './icons/cathedral-v52-512.png?v=53', './online.js?v=56', './firebase-config.js'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting()));
 });

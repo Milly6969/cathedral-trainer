@@ -257,7 +257,7 @@ main{padding-top:20px}
     <section class="online-field" id="onlineField" aria-label="Online multiplayer">
 <div class="online-message">Play on separate devices. Create a room, then share its code or invitation link. Creator plays Dark, invited player Light.</div>
 <div class="online-buttons"><button class="btn primary" id="onlineCreate" type="button">Create room</button><button class="btn" id="onlineJoin" type="button">Join room</button></div>
-<label class="small" for="onlineCode">Room code</label><input id="onlineCode" maxlength="8" placeholder="XXXXXXXX" autocomplete="off" aria-label="Room code">
+<label class="small" for="onlineCode">Room code</label><input id="onlineCode" maxlength="8" placeholder="ABCD (or old 8-character code)" autocomplete="off" aria-label="Room code">
 <div id="onlineRoom" class="online-roomline"></div><div id="onlineMessage" class="online-message" role="status">Firebase setup required before online play.</div>
 <div class="online-buttons"><button class="btn" type="button" id="onlineCopy">Copy invite</button><button class="btn" type="button" id="onlineLeave">Leave room</button></div>
 </section>
@@ -982,8 +982,8 @@ try{ const data=JSON.parse(localStorage.getItem(STORAGE_KEY)); if(data && data.m
 })();
 </script>
 <script>
-if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=55", {updateViaCache:"none"}).catch(console.warn)); }
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=56", {updateViaCache:"none"}).catch(console.warn)); }
 </script>
-<script type="module" src="./online.js?v=54"></script>
+<script type="module" src="./online.js?v=56"></script>
 </body>
 </html>
